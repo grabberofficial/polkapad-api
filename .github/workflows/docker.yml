@@ -38,15 +38,28 @@ jobs:
         run: |
           echo "TAG=${ECR}/${IMAGE}:$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - name: Npm dependencies
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '17'
+
+      - name: Install dependencies
         run: npm ci
 
-      - name: ll
-        run: ls -la
+      - name: Unit tests
+        run: npm run test
 
-#      - name: ECR login
-#        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR
-#
-#      - name: Push image
-#        run: docker push $TAG
+      - name: E2e tests
+        run: npm run test:e2e
+
+      - name: Coverage test
+        run: npm run test:cov
+
+      - name: Docker build
+        run: docker build -t $TAG -f .github/workflows/Dockerfile .
+
+      - name: ECR login
+        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR
+
+      - name: Push image
+        run: docker push $TAG
 

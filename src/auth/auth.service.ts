@@ -1,5 +1,4 @@
 import { Auth } from './entity/auth.entity';
-import { compare, genSalt, hash } from 'bcryptjs';
 import { PrismaService } from './../prisma/prisma.service';
 import {
   Injectable,
@@ -8,8 +7,10 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { OtpService } from './otp/otp.service';
-import { OtpEntity } from './otp/otp.entity';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { LoginDto } from './dto/login.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { UsersService } from 'src/users/users.service';
+
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
+    private readonly usersService: UsersService,
   ) { }
 
   async sendCode(email: string): Promise<string> {
@@ -30,7 +32,31 @@ export class AuthService {
     return code;
   }
 
-  async login(email: string, code: string): Promise<Auth> {
+  async login(loginObject: LoginDto): Promise<Auth> {
+    const { email, password } = loginObject;
+
+    const user = await this.prisma.user.findUnique({ where: { email: email } });
+
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
+    if (!user.password) {
+      throw new Error('User has no password');
+    }
+
+    const passwordMatch = await this.usersService.comparePassword(password, user.password)
+
+    if (!passwordMatch) {
+      throw new Error('Invalid credentials');
+    }
+
+    return {
+      accessToken: this.jwtService.sign({ userId: user.id }),
+    };
+  }
+
+  async loginByCode(email: string, code: string): Promise<Auth> {
     const user = await this.prisma.user.findUnique({ where: { email: email } });
 
     if (!user) {
@@ -56,7 +82,7 @@ export class AuthService {
     };
   }
 
-  async register(createUserDto: CreateUserDto) {
+  async registerByCode(createUserDto: CreateUserDto) {
     const user = await this.prisma.user.create({ data: createUserDto })
     await this.otpService.create(user);
 
@@ -67,10 +93,4 @@ export class AuthService {
     return this.prisma.user.findUnique({ where: { id: userId } });
   }
 
-  protected async hashPassword(password: string): Promise<string> {
-    const salt = await genSalt(12);
-    const hashedPassword = await hash(password, salt);
-
-    return hashedPassword;
-  }
 }

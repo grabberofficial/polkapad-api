@@ -1,3 +1,4 @@
+import { LoginCodeDto } from './dto/login-code.dto';
 import { LoginDto } from './dto/login.dto';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
@@ -33,15 +34,21 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ type: Auth })
-  async login(@Body() { email, code }: LoginDto) {
-    // return this.authService.sendCode(email);
-    return this.authService.login(email, code);
+  async login(@Body() { email, password }: LoginDto) {
+    return this.authService.login({ email, password });
   }
 
-  @Post('register')
+  @Post('login/code')
+  @ApiOkResponse({ type: Auth })
+  async loginByCode(@Body() { email, code }: LoginCodeDto) {
+    // return this.authService.sendCode(email);
+    return this.authService.loginByCode(email, code);
+  }
+
+  @Post('register/code')
   @ApiCreatedResponse({ type: UserEntity })
-  async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto)
+  async registerByCode(@Body() createUserDto: CreateUserDto) {
+    const user = await this.authService.registerByCode(createUserDto)
     const code = await this.authService.sendCode(user.email);
     // TODO: enable after account change
     // const mail = await this.mailService.sendOTPCodeToUser(user, code)

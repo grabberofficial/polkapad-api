@@ -46,7 +46,6 @@ export class MailService {
     const model = {
       action_url: '/',
       product_name: PRODUCT_NAME,
-      username: user.username,
       code: code,
     }
     await this.send(user.email, OTP_TEMPLATE, model)

@@ -82,8 +82,13 @@ export class AuthService {
     };
   }
 
+  async register(createUserDto: CreateUserDto) {
+    const user = await this.usersService.create(createUserDto);
+    return user;
+  }
+
   async registerByCode(createUserDto: CreateUserDto) {
-    const user = await this.prisma.user.create({ data: createUserDto })
+    const user = await this.usersService.create(createUserDto);
     await this.otpService.create(user);
 
     return user;

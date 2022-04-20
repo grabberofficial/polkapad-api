@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserEntity } from './entity/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -20,8 +21,19 @@ export class UsersService {
     return await compare(password, userPassword);
   }
 
-  create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({ data: createUserDto });
+  async create(createUserDto: CreateUserDto) {
+    const { email, password } = createUserDto;
+    let hashedPassword = null;
+    if (password) {
+      hashedPassword = await this.hashPassword(password);
+    }
+
+    const newUser = new UserEntity({
+      email: email,
+      password: hashedPassword
+    });
+
+    return this.prisma.user.create({ data: newUser });
   }
 
   async findByEmail(email: string) {

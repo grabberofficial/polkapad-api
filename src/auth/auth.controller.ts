@@ -23,7 +23,7 @@ export class AuthController {
   @Post('sendCode')
   @ApiOkResponse()
   async sendCode(@Body() { email }: SendCodeDto) {
-    const user = await this.usersService.findByEmail(email)
+    const user = await this.usersService.findByEmail(email);
     const code = await this.authService.sendCode(user.email);
     // TODO: enable after account change
     // const mail = await this.mailService.sendOTPCodeToUser(user, code)
@@ -45,10 +45,17 @@ export class AuthController {
     return this.authService.loginByCode(email, code);
   }
 
+  @Post('register')
+  @ApiCreatedResponse({ type: UserEntity })
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.authService.register(createUserDto);
+    return user;
+  }
+
   @Post('register/code')
   @ApiCreatedResponse({ type: UserEntity })
   async registerByCode(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.registerByCode(createUserDto)
+    const user = await this.authService.registerByCode(createUserDto);
     const code = await this.authService.sendCode(user.email);
     // TODO: enable after account change
     // const mail = await this.mailService.sendOTPCodeToUser(user, code)

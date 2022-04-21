@@ -6,4 +6,4 @@ RUN npm ci
 RUN npm run build
 RUN apk add tini
 ENTRYPOINT ["tini", "--"]
-CMD ["entrypoint.sh"]
+CMD ["/usr/src/app/entrypoint.sh"]

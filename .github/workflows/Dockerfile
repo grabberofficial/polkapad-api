@@ -1,7 +1,8 @@
-FROM node:17-alpine
-RUN apk add tini
-ENTRYPOINT ["tini", "--"]
+FROM node:16-alpine
+COPY .github/workflows/entrypoint.sh .
 WORKDIR /usr/src/app
 COPY . .
 RUN npm run build
-CMD ["node", "/usr/src/app/dist/main"]
+RUN apk add tini
+ENTRYPOINT ["tini", "--"]
+CMD ["entrypoint.sh"]

@@ -9,6 +9,7 @@ import { Auth } from './entity/auth.entity';
 import { SendCodeDto } from './dto/sendCode.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CreateUserOtpDto } from 'src/users/dto/create-user-otp.dto';
+import { RestorePasswordDto } from './dto/restore-password.dto';
 import { UserEntity } from 'src/users/entity/user.entity';
 import { MailService } from 'src/shared/mail/mail.service';
 import { UsersService } from 'src/users/users.service';
@@ -22,7 +23,7 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) { }
 
-  @Post('sendCode')
+  @Post('code/send')
   @ApiOkResponse()
   async sendCode(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.findByEmail(email);
@@ -34,27 +35,14 @@ export class AuthController {
     return { message: 'ok', code }
   }
 
-  @Post('login')
-  @ApiOkResponse({ type: Auth })
-  async login(@Body() { email, password }: LoginDto) {
-    return this.authService.login({ email, password });
-  }
-
-  @Post('login/code')
+  @Post('code/login')
   @ApiOkResponse({ type: Auth })
   async loginByCode(@Body() { email, code }: LoginCodeDto) {
     // return this.authService.sendCode(email);
     return this.authService.loginByCode(email, code);
   }
 
-  @Post('register')
-  @ApiCreatedResponse({ type: UserEntity })
-  async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto);
-    return user;
-  }
-
-  @Post('register/code')
+  @Post('code/register')
   @ApiCreatedResponse({ type: UserEntity })
   async registerByCode(@Body() createUserOtpDto: CreateUserOtpDto) {
     const { user, code } = await this.authService.registerByCode(createUserOtpDto);
@@ -63,5 +51,38 @@ export class AuthController {
     // console.log('mail', mail)
     console.log('code', code)
     return user;
+  }
+
+  @Post('password/register')
+  @ApiCreatedResponse({ type: UserEntity })
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.authService.register(createUserDto);
+    return user;
+  }
+
+  @Post('password/login')
+  @ApiOkResponse({ type: Auth })
+  async login(@Body() { email, password }: LoginDto) {
+    return this.authService.login({ email, password });
+  }
+
+  @Post('password/restore')
+  @ApiOkResponse()
+  async restorePassword(@Body() { email }: SendCodeDto) {
+    const user = await this.usersService.findByEmail(email);
+    const code = await this.authService.sendCode(user.email, CodeTypes.RESTORE_PASSWORD);
+    // TODO: enable after account change
+    // const mail = await this.mailService.sendOTPCodeToUser(user, code)
+    // console.log('mail', mail)
+    console.log('code', code)
+    return { message: 'ok', code }
+  }
+
+  @Post('password/change')
+  @ApiOkResponse()
+  async changePassword(@Body() restorePasswordDto: RestorePasswordDto) {
+    await this.authService.restorePassword(restorePasswordDto);
+
+    return { message: 'ok' }
   }
 }

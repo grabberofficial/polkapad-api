@@ -13,7 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { CreateUserOtpDto } from 'src/users/dto/create-user-otp.dto';
 import { UsersService } from 'src/users/users.service';
-
+import { RestorePasswordDto } from './dto/restore-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -104,5 +104,32 @@ export class AuthService {
   async comparePassword(password: string, userPassword: string): Promise<boolean> {
     if (!userPassword) return false
     return await compare(password, userPassword);
+  }
+
+  async restorePassword({ email, password, code }: RestorePasswordDto): Promise<boolean> {
+
+    const user = await this.prisma.user.findUnique({ where: { email: email } });
+
+    if (!user) {
+      throw new NotFoundException(`No user found for email: ${email}`);
+    }
+
+    const otp = await this.otpService.getLatestCodeForUser(user, CodeTypes.RESTORE_PASSWORD);
+    if (!otp) {
+      throw new NotFoundException(`No code found for the user: ${email}`);
+    }
+
+    const codeValid = await this.otpService.validateCode(otp, code);
+
+    if (!codeValid) {
+      throw new UnauthorizedException('Invalid code');
+    }
+
+    this.usersService.changePassword(user, password)
+
+    // purge codes after user login
+    this.otpService.deleteCodesForUser(user);
+
+    return true
   }
 }

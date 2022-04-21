@@ -10,7 +10,6 @@ import { genSalt, hash, compare } from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OtpEntity } from './otp.entity';
 import { UserEntity } from 'src/users/entity/user.entity';
-import { Type } from '@nestjs/common';
 
 const OTP_DIGITS = '0123456789'
 

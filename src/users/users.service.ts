@@ -33,6 +33,19 @@ export class UsersService {
     return this.prisma.user.create({ data: newUser });
   }
 
+  async changePassword(user: UserEntity, password: string) {
+    const hashedPassword = await this.hashPassword(password);
+
+    return this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password: hashedPassword
+      },
+    });
+  }
+
   async createByCode(createUserOtpDto: CreateUserOtpDto) {
     const { email } = createUserOtpDto;
 

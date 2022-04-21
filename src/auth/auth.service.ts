@@ -1,14 +1,17 @@
 import { Auth } from './entity/auth.entity';
 import { PrismaService } from './../prisma/prisma.service';
+import { CodeTypes } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { compare } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { OtpService } from './otp/otp.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserOtpDto } from 'src/users/dto/create-user-otp.dto';
 import { UsersService } from 'src/users/users.service';
 
 
@@ -21,13 +24,13 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) { }
 
-  async sendCode(email: string): Promise<string> {
+  async sendCode(email: string, type: CodeTypes): Promise<string> {
     const user = await this.prisma.user.findUnique({ where: { email: email } });
 
     if (!user) {
       throw new NotFoundException(`No user found for email: ${email}`);
     }
-    const code = await this.otpService.create(user);
+    const code = await this.otpService.create(user, type);
 
     return code;
   }
@@ -45,7 +48,7 @@ export class AuthService {
       throw new Error('User has no password');
     }
 
-    const passwordMatch = await this.usersService.comparePassword(password, user.password)
+    const passwordMatch = await this.comparePassword(password, user.password);
 
     if (!passwordMatch) {
       throw new Error('Invalid credentials');
@@ -63,7 +66,7 @@ export class AuthService {
       throw new NotFoundException(`No user found for email: ${email}`);
     }
 
-    const otp = await this.otpService.getLatestCodeForUser(user);
+    const otp = await this.otpService.getLatestCodeForUser(user, CodeTypes.SIGNIN);
     if (!otp) {
       throw new NotFoundException(`No code found for the user: ${email}`);
     }
@@ -87,15 +90,19 @@ export class AuthService {
     return user;
   }
 
-  async registerByCode(createUserDto: CreateUserDto) {
-    const user = await this.usersService.create(createUserDto);
-    await this.otpService.create(user);
+  async registerByCode(createUserOtpDto: CreateUserOtpDto) {
+    const user = await this.usersService.createByCode(createUserOtpDto);
+    const code = await this.otpService.create(user, CodeTypes.SIGNIN);
 
-    return user;
+    return { user, code };
   }
 
   validateUser(userId: string) {
     return this.prisma.user.findUnique({ where: { id: userId } });
   }
 
+  async comparePassword(password: string, userPassword: string): Promise<boolean> {
+    if (!userPassword) return false
+    return await compare(password, userPassword);
+  }
 }

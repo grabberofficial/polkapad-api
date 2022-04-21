@@ -3,12 +3,14 @@ import {
   Logger,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { CodeTypes } from '@prisma/client';
 import * as moment from 'moment';
 import { genSalt, hash, compare } from 'bcryptjs';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { OtpEntity } from './otp.entity';
 import { UserEntity } from 'src/users/entity/user.entity';
+import { Type } from '@nestjs/common';
 
 const OTP_DIGITS = '0123456789'
 
@@ -18,7 +20,7 @@ export class OtpService {
 
   constructor(private prisma: PrismaService) { }
 
-  async create(user: UserEntity) {
+  async create(user: UserEntity, type: CodeTypes) {
     const code = this.generateOTPCode();
     const salt = await genSalt(12);
     const hashedCode = await hash(code, salt);
@@ -26,6 +28,7 @@ export class OtpService {
     const data: OtpEntity = new OtpEntity({
       expiresAt: moment().add(1, 'hours').toDate(),
       hashedCode,
+      type,
       userId: user.id,
     });
 
@@ -38,10 +41,11 @@ export class OtpService {
     return code;
   }
 
-  async getLatestCodeForUser(user: UserEntity) {
+  async getLatestCodeForUser(user: UserEntity, type: CodeTypes) {
     return this.prisma.otp.findFirst({
       where: {
         userId: user.id,
+        type
       },
       orderBy: {
         createdAt: 'desc',

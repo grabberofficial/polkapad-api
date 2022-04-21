@@ -1,4 +1,4 @@
-import { Otp } from '@prisma/client';
+import { Otp, CodeTypes } from '@prisma/client';
 
 export class OtpEntity implements Otp {
   id: string;
@@ -7,6 +7,7 @@ export class OtpEntity implements Otp {
   expiresAt: Date;
   hashedCode: string;
   userId: string;
+  type: CodeTypes;
 
   constructor(partial: Partial<OtpEntity>) {
     Object.assign(this, partial);

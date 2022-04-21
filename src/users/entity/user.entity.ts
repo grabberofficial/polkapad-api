@@ -11,6 +11,9 @@ export class UserEntity implements User {
   @ApiProperty()
   updatedAt: Date;
 
+  @ApiProperty()
+  name: string;
+
   @ApiProperty({ required: false })
   password: string;
 

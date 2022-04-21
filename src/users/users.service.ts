@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserOtpDto } from './dto/create-user-otp.dto';
 import { UserEntity } from './entity/user.entity';
 
 @Injectable()
@@ -16,21 +17,27 @@ export class UsersService {
     return hashedPassword;
   }
 
-  async comparePassword(password: string, userPassword: string): Promise<boolean> {
-    if (!userPassword) return false
-    return await compare(password, userPassword);
-  }
-
   async create(createUserDto: CreateUserDto) {
-    const { email, password } = createUserDto;
+    const { email, password, name } = createUserDto;
     let hashedPassword = null;
     if (password) {
       hashedPassword = await this.hashPassword(password);
     }
 
     const newUser = new UserEntity({
+      name: name,
       email: email,
       password: hashedPassword
+    });
+
+    return this.prisma.user.create({ data: newUser });
+  }
+
+  async createByCode(createUserOtpDto: CreateUserOtpDto) {
+    const { email } = createUserOtpDto;
+
+    const newUser = new UserEntity({
+      email: email,
     });
 
     return this.prisma.user.create({ data: newUser });

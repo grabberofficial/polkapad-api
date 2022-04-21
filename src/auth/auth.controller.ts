@@ -2,11 +2,13 @@ import { LoginCodeDto } from './dto/login-code.dto';
 import { LoginDto } from './dto/login.dto';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
+import { CodeTypes } from '@prisma/client';
 
 import { AuthService } from './auth.service';
 import { Auth } from './entity/auth.entity';
 import { SendCodeDto } from './dto/sendCode.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserOtpDto } from 'src/users/dto/create-user-otp.dto';
 import { UserEntity } from 'src/users/entity/user.entity';
 import { MailService } from 'src/shared/mail/mail.service';
 import { UsersService } from 'src/users/users.service';
@@ -24,7 +26,7 @@ export class AuthController {
   @ApiOkResponse()
   async sendCode(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.findByEmail(email);
-    const code = await this.authService.sendCode(user.email);
+    const code = await this.authService.sendCode(user.email, CodeTypes.SIGNIN);
     // TODO: enable after account change
     // const mail = await this.mailService.sendOTPCodeToUser(user, code)
     // console.log('mail', mail)
@@ -54,9 +56,8 @@ export class AuthController {
 
   @Post('register/code')
   @ApiCreatedResponse({ type: UserEntity })
-  async registerByCode(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.registerByCode(createUserDto);
-    const code = await this.authService.sendCode(user.email);
+  async registerByCode(@Body() createUserOtpDto: CreateUserOtpDto) {
+    const { user, code } = await this.authService.registerByCode(createUserOtpDto);
     // TODO: enable after account change
     // const mail = await this.mailService.sendOTPCodeToUser(user, code)
     // console.log('mail', mail)

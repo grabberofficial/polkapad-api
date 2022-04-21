@@ -1,6 +1,6 @@
 FROM node:16-alpine
-COPY .github/workflows/entrypoint.sh .
 WORKDIR /usr/src/app
+COPY .github/workflows/entrypoint.sh .
 COPY . .
 RUN npm ci
 RUN npm run build

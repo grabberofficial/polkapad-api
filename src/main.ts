@@ -17,6 +17,8 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors();
+
   // apply transform to all responses
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 

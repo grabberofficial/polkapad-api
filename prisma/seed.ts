@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const USER = {
   password: 'testtest',
   email: 'test@email.com'
-}
+};
 
 async function main() {
   const salt = await genSalt(12);

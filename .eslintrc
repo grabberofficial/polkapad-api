@@ -1,0 +1,31 @@
+{
+  "parser":"@typescript-eslint/parser",
+  "parserOptions":{
+    "project": "tsconfig.json",
+    "sourceType":"module"
+  },
+  "extends":[
+    "airbnb-typescript/base",
+    "prettier",
+    "plugin:@typescript-eslint/eslint-recommended"
+  ],
+  "plugins":[
+    "prettier",
+    "import",
+    "@typescript-eslint/eslint-plugin"
+  ],
+  "root":true,
+  "env":{
+    "node":true,
+    "jest":true
+  },
+  "rules":{
+    "quotes": ["error", "single"],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "import/prefer-default-export": "off",
+    "prettier/prettier": "error",
+    "no-await-in-loop": "off",
+    "no-restricted-syntax": "off",
+    "@typescript-eslint/no-explicit-any":"off"
+  }
+}

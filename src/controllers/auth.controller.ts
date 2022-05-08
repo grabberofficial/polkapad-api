@@ -20,7 +20,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly mailService: MailService,
     private readonly usersService: UsersService
-  ) {}
+  ) { }
 
   @Post('code/send')
   @ApiOkResponse()
@@ -28,8 +28,8 @@ export class AuthController {
     const user = await this.usersService.findByEmail(email);
     const code = await this.authService.sendCode(user.email, CodeTypes.SIGNIN);
     // TODO: enable after account change
-    // const mail = await this.mailService.sendOTPCodeToUser(user, code)
-    // console.log('mail', mail)
+    // const mail = await this.mailService.sendMagicLinkToUser(user, code);
+    // console.log('mail', mail);
     console.log('code', code);
     return { message: 'ok', code };
   }
@@ -76,8 +76,8 @@ export class AuthController {
       CodeTypes.RESTORE_PASSWORD
     );
     // TODO: enable after account change
-    // const mail = await this.mailService.sendOTPCodeToUser(user, code)
-    // console.log('mail', mail)
+    // const mail = await this.mailService.sendResetPasswordToUser(user, code);
+    // console.log('mail', mail);
     console.log('code', code);
     return { message: 'ok', code };
   }

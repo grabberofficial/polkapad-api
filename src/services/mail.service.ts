@@ -7,9 +7,12 @@ import { ServerClient, TemplatedMessage } from 'postmark';
 
 import { UserModel } from 'models';
 
-const DEFAULT_FROM = 'ops@polkapad.io';
-const OTP_TEMPLATE = 'otp-code';
+const DEFAULT_FROM = 'hello@polkapad.network';
 const PRODUCT_NAME = 'Polkapad';
+const DOMAIN = 'app.polkapad.codes';
+
+const MAGIC_LINK_TEMPLATE = 'magic-link';
+const PASSWORD_RESET_TEMPLATE = 'password-reset';
 
 @Injectable()
 export class MailService {
@@ -20,7 +23,7 @@ export class MailService {
   constructor() {
     // TODO: move api key to configs
     // console.log('postmark', postmark)
-    this.client = new ServerClient('54e6d43e-1da0-41e9-9b23-9c4de541420a');
+    this.client = new ServerClient('e30ca405-d34c-49e2-b9fa-aec0c80e1f71');
   }
 
   test(): ServerClient {
@@ -43,16 +46,28 @@ export class MailService {
       const response = await this.client.sendEmailWithTemplate(options);
       return response;
     } catch (e) {
+      console.log('e', e);
       throw new InternalServerErrorException(`Can't send email to ${to}`);
     }
   }
 
-  async sendOTPCodeToUser(user: UserModel, code: string) {
+  async sendMagicLinkToUser(user: UserModel, code: string) {
+    const actionUrl = `https://${DOMAIN}/auth/magic-link?emal=${user.email}&code=${code}`;
     const model = {
-      action_url: '/',
-      product_name: PRODUCT_NAME,
-      code: code
+      action_url: actionUrl,
+      name: user.name,
+      product_name: PRODUCT_NAME
     };
-    await this.send(user.email, OTP_TEMPLATE, model);
+    await this.send(user.email, MAGIC_LINK_TEMPLATE, model);
+  }
+
+  async sendResetPasswordToUser(user: UserModel, code: string) {
+    const actionUrl = `https://${DOMAIN}/auth/password-reset?emal=${user.email}&code=${code}`;
+    const model = {
+      action_url: actionUrl,
+      name: user.name,
+      product_name: PRODUCT_NAME
+    };
+    await this.send(user.email, PASSWORD_RESET_TEMPLATE, model);
   }
 }

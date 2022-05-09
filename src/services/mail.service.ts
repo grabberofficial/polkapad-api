@@ -31,24 +31,24 @@ export class MailService {
   }
 
   async send(to, templateName: string, templateModel: object) {
-    try {
-      const from = DEFAULT_FROM;
+    // try {
+    const from = DEFAULT_FROM;
 
-      const options: TemplatedMessage = {
-        From: from,
-        To: to || 'test@email.com',
-        TemplateAlias: templateName,
-        TemplateModel: templateModel,
-        TrackOpens: false
-      };
+    const options: TemplatedMessage = {
+      From: from,
+      To: to || 'test@email.com',
+      TemplateAlias: templateName,
+      TemplateModel: templateModel,
+      TrackOpens: false
+    };
 
-      // console.log('sending:', options)
-      const response = await this.client.sendEmailWithTemplate(options);
-      return response;
-    } catch (e) {
-      console.log('e', e);
-      throw new InternalServerErrorException(`Can't send email to ${to}`);
-    }
+    // console.log('sending:', options)
+    const response = await this.client.sendEmailWithTemplate(options);
+    return response;
+    // } catch (e) {
+    //   console.log('e', e);
+    //   throw new InternalServerErrorException(`Can't send email to ${to}`);
+    // }
   }
 
   async sendMagicLinkToUser(user: UserModel, code: string) {

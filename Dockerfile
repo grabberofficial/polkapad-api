@@ -3,7 +3,7 @@ FROM node:alpine AS builder
 # Create app directory
 WORKDIR /usr/src/app
 
-COPY package.json yarn.lock ./
+#COPY package.json yarn.lock ./
 COPY prisma ./prisma/
 
 # Install app dependencies

@@ -163,7 +163,7 @@ export class AuthController {
 
     const otpCode = await this.otpService.getLatestCodeByUserId(
       user.id,
-      CodeTypes.SIGNIN
+      CodeTypes.RESTORE_PASSWORD
     );
 
     if (!otpCode)

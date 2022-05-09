@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ServerClient, TemplatedMessage } from 'postmark';
 
 import { UserModel } from 'models';
@@ -16,8 +12,6 @@ const PASSWORD_RESET_TEMPLATE = 'password-reset';
 
 @Injectable()
 export class MailService {
-  private readonly logger = new Logger('Mailervice');
-
   client: ServerClient;
 
   constructor() {
@@ -52,7 +46,7 @@ export class MailService {
   }
 
   async sendMagicLinkToUser(user: UserModel, code: string) {
-    const actionUrl = `https://${DOMAIN}/auth/magic-link?emal=${user.email}&code=${code}`;
+    const actionUrl = `https://${DOMAIN}/auth/magic-link?email=${user.email}&code=${code}`;
     const model = {
       action_url: actionUrl,
       name: user.name,
@@ -62,7 +56,7 @@ export class MailService {
   }
 
   async sendResetPasswordToUser(user: UserModel, code: string) {
-    const actionUrl = `https://${DOMAIN}/auth/password-reset?emal=${user.email}&code=${code}`;
+    const actionUrl = `https://${DOMAIN}/auth/password-reset?email=${user.email}&code=${code}`;
     const model = {
       action_url: actionUrl,
       name: user.name,

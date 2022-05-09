@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json } from 'body-parser';
-import { PrismaClientExceptionFilter } from './filters';
+import { PrismaExceptionFilter } from './filters';
 
 import { AppModule } from 'modules';
 
@@ -11,7 +11,7 @@ export class Application {
   private app: INestApplication;
 
   private applyFilters() {
-    this.app.useGlobalFilters(new PrismaClientExceptionFilter());
+    this.app.useGlobalFilters(new PrismaExceptionFilter());
   }
 
   private applyPipes() {

@@ -1,49 +1,58 @@
-import {
-  Injectable,
-  Logger,
-  InternalServerErrorException
-} from '@nestjs/common';
-import { CodeTypes } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { CodeTypes, Otp, Prisma } from '@prisma/client';
 import * as moment from 'moment';
 import { genSalt, hash, compare } from 'bcryptjs';
 
-import { PrismaService } from 'services/prisma.service';
-
-import { UserModel, OtpModel } from 'models';
+import { PrismaRepository } from 'repositories';
 
 const OTP_DIGITS = '0123456789';
 
 @Injectable()
 export class OtpService {
-  private readonly logger = new Logger(OtpService.name);
+  private readonly otpRepository: Prisma.OtpDelegate<Prisma.RejectOnNotFound>;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(prismaRepository: PrismaRepository) {
+    this.otpRepository = prismaRepository.otp;
+  }
 
-  async create(user: UserModel, type: CodeTypes) {
-    const code = this.generateOTPCode();
-    const salt = await genSalt(12);
-    const hashedCode = await hash(code, salt);
+  private generateCode(otpLength = 6): string {
+    let otp = '';
 
-    const data: OtpModel = new OtpModel({
-      expiresAt: moment().add(1, 'hours').toDate(),
-      hashedCode,
-      type,
-      userId: user.id
-    });
-
-    const otp = await this.prisma.otp.create({ data });
-
-    if (!otp) {
-      throw new InternalServerErrorException('Error while creating otp code');
+    for (let i = 1; i <= otpLength; i++) {
+      const index = Math.floor(Math.random() * OTP_DIGITS.length);
+      otp = otp + OTP_DIGITS[index];
     }
+
+    return otp;
+  }
+
+  private async encryptCode(code: string): Promise<string> {
+    const salt = await genSalt(12);
+
+    return hash(code, salt);
+  }
+
+  public async createOtp(
+    info: Pick<Prisma.OtpUncheckedCreateInput, 'userId' | 'type'>
+  ): Promise<string> {
+    const code = this.generateCode();
+    const hashedCode = await this.encryptCode(code);
+
+    const newOtp = {
+      ...info,
+      hashedCode,
+      expiresAt: moment().add(1, 'hours').toDate()
+    };
+
+    await this.otpRepository.create({ data: newOtp });
 
     return code;
   }
 
-  async getLatestCodeForUser(user: UserModel, type: CodeTypes) {
-    return this.prisma.otp.findFirst({
+  public getLatestCodeByUserId(userId: string, type: CodeTypes): Promise<Otp> {
+    return this.otpRepository.findFirst({
       where: {
-        userId: user.id,
+        userId,
         type
       },
       orderBy: {
@@ -52,16 +61,16 @@ export class OtpService {
     });
   }
 
-  async deleteCodesForUser(user: UserModel) {
-    return this.prisma.otp.deleteMany({
+  public async deleteCodesByUserId(userId: string): Promise<void> {
+    await this.otpRepository.deleteMany({
       where: {
-        userId: user.id
+        userId
       }
     });
   }
 
-  async deleteOutdatedCodes() {
-    return this.prisma.otp.deleteMany({
+  public async deleteOutdatedCodes() {
+    await this.otpRepository.deleteMany({
       where: {
         expiresAt: {
           lt: moment().toDate()
@@ -70,19 +79,14 @@ export class OtpService {
     });
   }
 
-  async validateCode(otp: OtpModel, code: string): Promise<boolean> {
-    const codeValid = await compare(code, otp.hashedCode);
-    const codeNotExpired = moment().isBefore(moment(otp.expiresAt).format());
-    return codeValid && codeNotExpired;
-  }
+  public async compareCode(
+    code: string,
+    hashedCode: string,
+    expiresAt: Date
+  ): Promise<boolean> {
+    const isValid = await compare(code, hashedCode);
+    const isNotExpired = moment().isBefore(moment(expiresAt).format());
 
-  private generateOTPCode(otpLength = 6) {
-    let otp = '';
-    for (let i = 1; i <= otpLength; i++) {
-      const index = Math.floor(Math.random() * OTP_DIGITS.length);
-      otp = otp + OTP_DIGITS[index];
-    }
-
-    return otp;
+    return isValid && isNotExpired;
   }
 }

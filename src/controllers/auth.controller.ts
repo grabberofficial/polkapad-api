@@ -2,8 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
 import { CodeTypes } from '@prisma/client';
 
-import { AuthService, UsersService, MailService } from 'services';
-import { UserModel, AuthModel } from 'models';
+import { UsersService, OtpService, JwtService, MailService } from 'services';
+import { UserModel, UserContextModel } from 'models';
 
 import {
   LoginDto,
@@ -12,81 +12,184 @@ import {
   RestorePasswordDto
 } from 'dto/auth';
 import { CreateUserDto, CreateUserOtpDto } from 'dto/users';
+import {
+  EmailAlreadyUsedException,
+  IncorrectEmailOrCodeException,
+  IncorrectEmailOrPasswordException,
+  NotFoundException
+} from 'exceptions';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
-    private readonly mailService: MailService,
-    private readonly usersService: UsersService
-  ) { }
+    private readonly jwtService: JwtService,
+    private readonly usersService: UsersService,
+    private readonly otpService: OtpService,
+    private readonly mailService: MailService
+  ) {}
 
   @Post('code/send')
-  @ApiOkResponse()
+  @ApiOkResponse({ type: String })
   async sendCode(@Body() { email }: SendCodeDto) {
-    const user = await this.usersService.findByEmail(email);
-    const code = await this.authService.sendCode(user.email, CodeTypes.SIGNIN);
-    // TODO: enable after account change
-    const mail = await this.mailService.sendMagicLinkToUser(user, code);
-    console.log('mail', mail);
-    console.log('code', code);
-    return { message: 'ok', code };
+    const user = await this.usersService.getUserByEmail(email);
+
+    if (!user) throw new NotFoundException('User', user.id);
+
+    const code = await this.otpService.createOtp({
+      userId: user.id,
+      type: CodeTypes.SIGNIN
+    });
+
+    await this.mailService.sendMagicLinkToUser(user, code);
+
+    return code;
   }
 
   @Post('code/login')
-  @ApiOkResponse({ type: AuthModel })
+  @ApiOkResponse({ type: String })
   async loginByCode(@Body() { email, code }: LoginCodeDto) {
-    // return this.authService.sendCode(email);
-    return this.authService.loginByCode(email, code);
+    const user = await this.usersService.getUserByEmail(email);
+
+    if (!user) throw new IncorrectEmailOrCodeException();
+
+    const otpCode = await this.otpService.getLatestCodeByUserId(
+      user.id,
+      CodeTypes.SIGNIN
+    );
+
+    if (!otpCode)
+      throw new NotFoundException(
+        'OtpCodeByUserEmail',
+        email,
+        `No code found for email: ${email}`
+      );
+
+    const isValidCode = await this.otpService.compareCode(
+      code,
+      otpCode.hashedCode,
+      otpCode.expiresAt
+    );
+
+    if (!isValidCode) throw new IncorrectEmailOrCodeException();
+
+    await this.otpService.deleteCodesByUserId(user.id);
+
+    const userContext: UserContextModel = {
+      id: user.id,
+      name: user.name
+    };
+
+    return this.jwtService.signAsync(userContext);
   }
 
   @Post('code/register')
   @ApiCreatedResponse({ type: UserModel })
-  async registerByCode(@Body() createUserOtpDto: CreateUserOtpDto) {
-    const { user, code } = await this.authService.registerByCode(
-      createUserOtpDto
-    );
-    // TODO: enable after account change
-    const mail = await this.mailService.sendMagicLinkToUser(user, code);
-    console.log('mail', mail);
-    console.log('code', code);
+  async registerByCode(@Body() { email }: CreateUserOtpDto) {
+    const existUser = await this.usersService.getUserByEmail(email);
+
+    if (existUser) throw new EmailAlreadyUsedException();
+
+    const user = await this.usersService.createUser({ email });
+    const code = await this.otpService.createOtp({
+      userId: user.id,
+      type: CodeTypes.SIGNIN
+    });
+
+    await this.mailService.sendMagicLinkToUser(user, code);
+
     return user;
   }
 
   @Post('password/register')
   @ApiCreatedResponse({ type: UserModel })
-  async register(@Body() createUserDto: CreateUserDto) {
-    const user = await this.authService.register(createUserDto);
-    return user;
+  async register(@Body() { password, name, email }: CreateUserDto) {
+    const existUser = await this.usersService.getUserByEmail(email);
+
+    if (existUser) throw new EmailAlreadyUsedException();
+
+    return this.usersService.createUser({
+      email,
+      password,
+      name
+    });
   }
 
   @Post('password/login')
-  @ApiOkResponse({ type: AuthModel })
+  @ApiOkResponse({ type: String })
   async login(@Body() { email, password }: LoginDto) {
-    return this.authService.login({ email, password });
+    const user = await this.usersService.getUserByEmail(email);
+
+    if (!user) throw new IncorrectEmailOrPasswordException();
+
+    const isValidPassword = await this.usersService.comparePassword(
+      password,
+      user.password
+    );
+
+    if (!isValidPassword) throw new IncorrectEmailOrPasswordException();
+
+    const userContext: UserContextModel = {
+      id: user.id,
+      name: user.name
+    };
+
+    return this.jwtService.signAsync(userContext);
   }
 
-  @Post('password/restore')
-  @ApiOkResponse()
-  async restorePassword(@Body() { email }: SendCodeDto) {
-    const user = await this.usersService.findByEmail(email);
-    const code = await this.authService.sendCode(
-      user.email,
-      CodeTypes.RESTORE_PASSWORD
-    );
-    // TODO: enable after account change
-    const mail = await this.mailService.sendResetPasswordToUser(user, code);
-    console.log('mail', mail);
-    console.log('code', code);
-    return { message: 'ok', code };
+  @Post('password/reset')
+  @ApiOkResponse({ type: String })
+  async resetPassword(@Body() { email }: SendCodeDto) {
+    const user = await this.usersService.getUserByEmail(email);
+
+    if (!user) throw new NotFoundException('User', user.id);
+
+    const code = await this.otpService.createOtp({
+      userId: user.id,
+      type: CodeTypes.SIGNIN
+    });
+
+    await this.mailService.sendResetPasswordToUser(user, code);
+
+    return code;
   }
 
   @Post('password/change')
-  @ApiOkResponse()
-  async changePassword(@Body() restorePasswordDto: RestorePasswordDto) {
-    await this.authService.restorePassword(restorePasswordDto);
+  @ApiOkResponse({ type: String })
+  async changePassword(@Body() { email, password, code }: RestorePasswordDto) {
+    const user = await this.usersService.getUserByEmail(email);
 
-    return { message: 'ok' };
+    if (!user) throw new IncorrectEmailOrCodeException();
+
+    const otpCode = await this.otpService.getLatestCodeByUserId(
+      user.id,
+      CodeTypes.SIGNIN
+    );
+
+    if (!otpCode)
+      throw new NotFoundException(
+        'OtpCodeByUserEmail',
+        email,
+        `No code found for email: ${email}`
+      );
+
+    const isValidCode = await this.otpService.compareCode(
+      code,
+      otpCode.hashedCode,
+      otpCode.expiresAt
+    );
+
+    if (!isValidCode) throw new IncorrectEmailOrCodeException();
+
+    await this.otpService.deleteCodesByUserId(user.id);
+
+    await this.usersService.updateUserPasswordById(user.id, password);
+
+    const userContext: UserContextModel = {
+      id: user.id,
+      name: user.name
+    };
+
+    return this.jwtService.signAsync(userContext);
   }
 }

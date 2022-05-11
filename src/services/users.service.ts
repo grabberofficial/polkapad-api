@@ -1,46 +1,53 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-import { genSalt, hash } from 'bcryptjs';
+import { Prisma, User } from '@prisma/client';
 
-import { PrismaService } from './prisma.service';
+import { genSalt, hash, compare } from 'bcryptjs';
 
-import { UserModel } from 'models';
-
-import { CreateUserDto, CreateUserOtpDto } from 'dto/users';
+import { PrismaRepository } from 'repositories';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  private readonly usersRepository: Prisma.UserDelegate<Prisma.RejectOnNotFound>;
 
-  protected async hashPassword(password: string): Promise<string> {
-    const salt = await genSalt(12);
-    const hashedPassword = await hash(password, salt);
-
-    return hashedPassword;
+  constructor(prismaRepository: PrismaRepository) {
+    this.usersRepository = prismaRepository.user;
   }
 
-  async create(createUserDto: CreateUserDto) {
-    const { email, password, name } = createUserDto;
-    let hashedPassword = null;
-    if (password) {
-      hashedPassword = await this.hashPassword(password);
+  private async encryptPassword(password: string): Promise<string> {
+    const salt = await genSalt(12);
+
+    return hash(password, salt);
+  }
+
+  public async comparePassword(
+    password: string,
+    hashedPassword?: string
+  ): Promise<boolean> {
+    if (!hashedPassword) return false;
+
+    return compare(password, hashedPassword);
+  }
+
+  public async createUser(info: Prisma.UserCreateInput): Promise<User> {
+    const newUser = { ...info };
+
+    if (info.password) {
+      newUser.password = await this.encryptPassword(info.password);
     }
 
-    const newUser = new UserModel({
-      name: name,
-      email: email,
-      password: hashedPassword
-    });
-
-    return this.prisma.user.create({ data: newUser });
+    return this.usersRepository.create({ data: newUser });
   }
 
-  async changePassword(user: UserModel, password: string) {
-    const hashedPassword = await this.hashPassword(password);
+  public async updateUserPasswordById(
+    userId: string,
+    newPassword: string
+  ): Promise<User> {
+    const hashedPassword = await this.encryptPassword(newPassword);
 
-    return this.prisma.user.update({
+    return this.usersRepository.update({
       where: {
-        id: user.id
+        id: userId
       },
       data: {
         password: hashedPassword
@@ -48,27 +55,11 @@ export class UsersService {
     });
   }
 
-  async createByCode(createUserOtpDto: CreateUserOtpDto) {
-    const { email } = createUserOtpDto;
-
-    const newUser = new UserModel({
-      email: email
-    });
-
-    return this.prisma.user.create({ data: newUser });
-  }
-
-  async findByEmail(email: string) {
-    const user = await this.prisma.user.findUnique({
+  public getUserByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findUnique({
       where: {
         email
       }
     });
-
-    if (!user) {
-      throw new NotFoundException(`No user found for email: ${email}`);
-    }
-
-    return user;
   }
 }

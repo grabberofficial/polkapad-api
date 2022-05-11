@@ -2,18 +2,18 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
 import { UserContext } from 'decorators';
-import { JwtAuthGuard } from 'guards';
+import { AuthGuard } from 'guards';
 
-import { UserModel } from 'models';
+import { UserContextModel } from 'models';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
   @Get('/currentUser')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOkResponse({ type: UserModel })
-  getCurrentUser(@UserContext() user) {
-    return user;
+  @ApiOkResponse({ type: UserContextModel })
+  getCurrentUser(@UserContext() userContext) {
+    return userContext;
   }
 }

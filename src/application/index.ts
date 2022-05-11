@@ -1,9 +1,11 @@
+import { values } from 'lodash';
 // import secureHelmet from 'helmet';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json } from 'body-parser';
-import { PrismaClientExceptionFilter } from './filters';
+import * as filters from './filters';
+import * as pipes from './pipes';
 
 import { AppModule } from 'modules';
 
@@ -11,11 +13,15 @@ export class Application {
   private app: INestApplication;
 
   private applyFilters() {
-    this.app.useGlobalFilters(new PrismaClientExceptionFilter());
+    values(filters).forEach((Filter) => {
+      this.app.useGlobalFilters(new Filter());
+    });
   }
 
   private applyPipes() {
-    this.app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    values(pipes).forEach((Pipe) => {
+      this.app.useGlobalPipes(new Pipe());
+    });
   }
 
   private applyMiddlewares() {

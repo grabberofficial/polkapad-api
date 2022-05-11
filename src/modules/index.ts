@@ -1,25 +1,29 @@
 import { values, omit } from 'lodash';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { PassportModule } from '@nestjs/passport';
 
 import * as services from 'services';
+import * as repositories from 'repositories';
 import * as workers from 'workers';
 
+import * as middlewares from 'middlewares';
 import * as controllers from 'controllers';
 
 import JwtModule from './jwt.module';
 import ScheduleModule from './schedule.module';
 
 @Module({
-  imports: [PassportModule, JwtModule, ScheduleModule],
+  imports: [JwtModule, ScheduleModule],
   controllers: values(controllers),
-  providers: [...values(omit(services, 'JwtService')), ...values(workers)]
+  providers: [
+    ...values(omit(services, 'JwtService')),
+    ...values(repositories),
+    ...values(workers)
+  ]
 })
 export class AppModule implements NestModule {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configure(consumer: MiddlewareConsumer): void {
-    // values(middlewares).forEach(middleware => {
-    //   consumer.apply(middleware).forRoutes('/');
-    // });
+    values(middlewares).forEach((middleware) => {
+      consumer.apply(middleware).forRoutes('/');
+    });
   }
 }

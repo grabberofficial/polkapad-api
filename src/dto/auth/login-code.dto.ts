@@ -3,6 +3,7 @@ import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class LoginCodeDto {
   @IsEmail({}, { message: 'Email is invalid' })
+  @IsNotEmpty()
   @ApiProperty()
   email: string;
 

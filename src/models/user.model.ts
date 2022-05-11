@@ -19,8 +19,4 @@ export class UserModel implements User {
 
   @ApiProperty({ required: true })
   email: string;
-
-  constructor(partial: Partial<UserModel>) {
-    Object.assign(this, partial);
-  }
 }

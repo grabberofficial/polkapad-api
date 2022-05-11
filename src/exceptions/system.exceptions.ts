@@ -23,6 +23,18 @@ export class BadRequestException extends BaseException {
   }
 }
 
+export class ValidationException extends BaseException {
+  constructor(validationErrors: Record<string, string[]>, message?: string) {
+    super(
+      HttpStatus.BAD_REQUEST,
+      ExceptionTypeEnum.ValidationError,
+      message,
+      undefined,
+      validationErrors
+    );
+  }
+}
+
 export class InternalServerErrorException extends BaseException {
   constructor(message?: string) {
     super(

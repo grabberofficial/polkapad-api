@@ -8,5 +8,6 @@ export enum ExceptionTypeEnum {
   IncorrectEmailOrCode = 'IncorrectEmailOrCode',
   EmailAlreadyUsed = 'EmailAlreadyUsed',
   NotFound = 'NotFound',
-  BadRequest = 'BadRequest'
+  BadRequest = 'BadRequest',
+  Conflict = 'Conflict'
 }

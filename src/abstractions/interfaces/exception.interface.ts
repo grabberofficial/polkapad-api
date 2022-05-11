@@ -1,11 +1,11 @@
-import { ValidationError } from 'class-validator';
+import { HttpStatus } from '@nestjs/common';
 import { ExceptionTypeEnum } from 'abstractions/enums';
 
 export interface IException {
-  code: number;
+  code: HttpStatus;
   type: ExceptionTypeEnum;
   message: string;
 
   metadata?: Record<string, string>;
-  validationErrors?: ValidationError[];
+  validationErrors?: Record<string, string[]>;
 }

@@ -1,8 +1,8 @@
+import { HttpException } from '@nestjs/common';
 import { IException } from 'abstractions/interfaces';
 import { ExceptionTypeEnum } from 'abstractions/enums';
-import { ValidationError } from 'class-validator';
 
-class BaseException extends Error implements IException {
+class BaseException extends HttpException implements IException {
   public code: number;
 
   public type: ExceptionTypeEnum;
@@ -11,16 +11,16 @@ class BaseException extends Error implements IException {
 
   public metadata?: any;
 
-  public validationErrors?: ValidationError[];
+  public validationErrors?: Record<string, string[]>;
 
   constructor(
     code: number,
     type: ExceptionTypeEnum,
     message: string,
     metadata?: any,
-    validationErrors?: ValidationError[]
+    validationErrors?: Record<string, string[]>
   ) {
-    super(message);
+    super(message, code);
 
     this.code = code;
     this.type = type;

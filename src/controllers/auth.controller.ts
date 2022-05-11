@@ -30,7 +30,7 @@ export class AuthController {
   ) {}
 
   @Post('code/send')
-  @ApiOkResponse({ type: String })
+  @ApiOkResponse()
   async sendCode(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.getUserByEmail(email);
 
@@ -42,8 +42,6 @@ export class AuthController {
     });
 
     await this.mailService.sendMagicLinkToUser(user, code);
-
-    return code;
   }
 
   @Post('code/login')
@@ -138,7 +136,7 @@ export class AuthController {
   }
 
   @Post('password/reset')
-  @ApiOkResponse({ type: String })
+  @ApiOkResponse()
   async resetPassword(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.getUserByEmail(email);
 
@@ -150,8 +148,6 @@ export class AuthController {
     });
 
     await this.mailService.sendResetPasswordToUser(user, code);
-
-    return code;
   }
 
   @Post('password/change')

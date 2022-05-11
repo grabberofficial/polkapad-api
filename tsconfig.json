@@ -21,6 +21,7 @@
       "exceptions/*": ["./src/exceptions/*"],
       "decorators": ["./src/decorators"],
       "decorators/*": ["./src/decorators/*"],
+      "utils/*": ["./src/utils/*"],
       "models": ["./src/models"],
       "models/*": ["./src/models/*"],
       "dto/*": ["./src/dto/*"],

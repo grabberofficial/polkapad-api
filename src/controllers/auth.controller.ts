@@ -34,7 +34,7 @@ export class AuthController {
   async sendCode(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.getUserByEmail(email);
 
-    if (!user) throw new NotFoundException('User', user.id);
+    if (!user) throw new NotFoundException('UserByEmail', email);
 
     const code = await this.otpService.createOtp({
       userId: user.id,
@@ -140,7 +140,7 @@ export class AuthController {
   async resetPassword(@Body() { email }: SendCodeDto) {
     const user = await this.usersService.getUserByEmail(email);
 
-    if (!user) throw new NotFoundException('User', user.id);
+    if (!user) throw new NotFoundException('UserByEmail', email);
 
     const code = await this.otpService.createOtp({
       userId: user.id,

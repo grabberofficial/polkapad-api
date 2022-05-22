@@ -1,13 +1,14 @@
 import { values } from 'lodash';
-// import secureHelmet from 'helmet';
+import secureHelmet from 'helmet';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json } from 'body-parser';
+import { isProduction, port } from 'config/system';
+import { AppModule } from 'modules';
+
 import * as filters from './filters';
 import * as pipes from './pipes';
-
-import { AppModule } from 'modules';
 
 export class Application {
   private app: INestApplication;
@@ -27,9 +28,9 @@ export class Application {
   private applyMiddlewares() {
     this.app.use(json({ limit: '2mb' }));
 
-    // if (IS_PRODUCTION) {
-    //   this.app.use(secureHelmet());
-    // }
+    if (isProduction) {
+      this.app.use(secureHelmet());
+    }
 
     this.app.enableCors({
       credentials: true,
@@ -53,17 +54,15 @@ export class Application {
   }
 
   public async bootstrap(): Promise<any> {
-    const port = 3000;
-
     this.app = await NestFactory.create(AppModule);
 
     this.applyFilters();
     this.applyPipes();
     this.applyMiddlewares();
 
-    // if (!IS_PRODUCTION) {
-    this.setupSwagger();
-    // }
+    if (!isProduction) {
+      this.setupSwagger();
+    }
 
     await this.app.listen(port);
 

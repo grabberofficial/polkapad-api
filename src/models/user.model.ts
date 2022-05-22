@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { KycStatusTypes, User } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserModel implements User {
@@ -16,6 +16,12 @@ export class UserModel implements User {
 
   @ApiProperty({ required: false })
   password: string;
+
+  @ApiProperty({ required: false })
+  kycId: string;
+
+  @ApiProperty({ required: false, enum: KycStatusTypes })
+  kycStatus: KycStatusTypes;
 
   @ApiProperty({ required: true })
   email: string;

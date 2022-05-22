@@ -13,7 +13,7 @@ export class UsersController {
   @Get('/currentUser')
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserContextModel })
-  getCurrentUser(@UserContext() userContext) {
+  getCurrentUser(@UserContext() userContext: UserContextModel) {
     return userContext;
   }
 }

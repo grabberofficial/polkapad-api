@@ -2,8 +2,9 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
 import { CodeTypes } from '@prisma/client';
 
+import { IUserContext } from 'abstractions/interfaces';
 import { UsersService, OtpService, JwtService, MailService } from 'services';
-import { UserModel, UserContextModel } from 'models';
+import { UserModel } from 'models';
 
 import {
   LoginDto,
@@ -73,9 +74,8 @@ export class AuthController {
 
     await this.otpService.deleteCodesByUserId(user.id);
 
-    const userContext: UserContextModel = {
-      id: user.id,
-      name: user.name
+    const userContext: IUserContext = {
+      id: user.id
     };
 
     return this.jwtService.signAsync(userContext);
@@ -127,9 +127,8 @@ export class AuthController {
 
     if (!isValidPassword) throw new IncorrectEmailOrPasswordException();
 
-    const userContext: UserContextModel = {
-      id: user.id,
-      name: user.name
+    const userContext: IUserContext = {
+      id: user.id
     };
 
     return this.jwtService.signAsync(userContext);
@@ -181,9 +180,8 @@ export class AuthController {
 
     await this.usersService.updateUserPasswordById(user.id, password);
 
-    const userContext: UserContextModel = {
-      id: user.id,
-      name: user.name
+    const userContext: IUserContext = {
+      id: user.id
     };
 
     return this.jwtService.signAsync(userContext);

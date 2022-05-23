@@ -7,4 +7,7 @@ export class UserContextModel implements IUserContext {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty()
+  kycStatus: string;
 }

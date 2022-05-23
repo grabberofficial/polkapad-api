@@ -62,4 +62,12 @@ export class UsersService {
       }
     });
   }
+
+  public getUserById(userId: string): Promise<User | null> {
+    return this.usersRepository.findUnique({
+      where: {
+        id: userId
+      }
+    });
+  }
 }

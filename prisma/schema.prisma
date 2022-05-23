@@ -19,6 +19,8 @@ model User {
   email    String  @unique
   name     String?
   password String?
+  kycId String?  @unique
+  kycStatus KycStatusTypes @default(NOT_VERIFIED)
   otp      Otp[]
 }
 
@@ -36,4 +38,11 @@ model Otp {
 enum CodeTypes {
   SIGNIN
   RESTORE_PASSWORD
+}
+
+enum KycStatusTypes {
+  NOT_VERIFIED
+  IN_PROGRESS
+  ACCEPTED
+  DECLINED
 }

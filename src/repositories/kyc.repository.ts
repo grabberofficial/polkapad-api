@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { redirectUrl, token } from 'config/kyc';
-import { serviceUrl } from 'config/system';
+import { callbackUrl, redirectUrl, token } from 'config/kyc';
 import { ApiRepository } from './base';
 
 @Injectable()
@@ -8,7 +7,7 @@ export class KycRepository extends ApiRepository {
   public async getVerificationUrl(kycId: string): Promise<string> {
     const payload = {
       reference: kycId,
-      callback_url: `https://${serviceUrl}/kyc/callback`,
+      callback_url: callbackUrl,
       redirect_url: redirectUrl,
       verification_mode: 'any',
       ttl: 60,

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ServerClient, TemplatedMessage } from 'postmark';
 
 import { UserModel } from 'models';
+import { token } from 'config/postmark';
 
 const DEFAULT_FROM = 'hello@polkapad.network';
 const PRODUCT_NAME = 'Polkapad';
@@ -15,34 +16,23 @@ export class MailService {
   client: ServerClient;
 
   constructor() {
-    // TODO: move api key to configs
-    // console.log('postmark', postmark)
-    this.client = new ServerClient('e30ca405-d34c-49e2-b9fa-aec0c80e1f71');
+    this.client = new ServerClient(token);
   }
 
   test(): ServerClient {
     return this.client;
   }
 
-  async send(to, templateName: string, templateModel: object) {
-    // try {
-    const from = DEFAULT_FROM;
-
+  send(to, templateName: string, templateModel: object) {
     const options: TemplatedMessage = {
-      From: from,
+      From: DEFAULT_FROM,
       To: to || 'test@email.com',
       TemplateAlias: templateName,
       TemplateModel: templateModel,
       TrackOpens: false
     };
 
-    // console.log('sending:', options)
-    const response = await this.client.sendEmailWithTemplate(options);
-    return response;
-    // } catch (e) {
-    //   console.log('e', e);
-    //   throw new InternalServerErrorException(`Can't send email to ${to}`);
-    // }
+    return this.client.sendEmailWithTemplate(options);
   }
 
   async sendMagicLinkToUser(user: UserModel, code: string) {

@@ -1,10 +1,9 @@
 import { JwtModule as NestJwtModule } from '@nestjs/jwt';
 
-// TODO: move to .env
-export const jwtSecret = 'db1e3a04e028eeec1b0c4af5f53fccb8';
+const { JWT_SECRET } = process.env;
 
 const JwtModule = NestJwtModule.register({
-  secret: jwtSecret,
+  secret: JWT_SECRET,
   signOptions: { expiresIn: '30d' }
 });
 

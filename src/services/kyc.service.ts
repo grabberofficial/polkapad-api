@@ -27,7 +27,7 @@ export class KycService {
 
   public async verifyCallback(kycId: string, event: string): Promise<void> {
     const accepted = ['verification.accepted'];
-    const declined = ['verification.declined'];
+    const declined = ['verification.declined', 'request.timeout'];
 
     let kycStatus: KycStatusTypes = KycStatusTypes.IN_PROGRESS;
 

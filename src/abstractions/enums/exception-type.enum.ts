@@ -7,6 +7,7 @@ export enum ExceptionTypeEnum {
   IncorrectEmailOrPassword = 'IncorrectEmailOrPassword',
   IncorrectEmailOrCode = 'IncorrectEmailOrCode',
   EmailAlreadyUsed = 'EmailAlreadyUsed',
+  WalletAlreadyUsed = 'WalletAlreadyUsed',
   NotFound = 'NotFound',
   BadRequest = 'BadRequest',
   Conflict = 'Conflict'

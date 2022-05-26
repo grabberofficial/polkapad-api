@@ -1,7 +1,8 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { IUserContext } from 'abstractions/interfaces';
 
-import { UsersService } from 'services';
+import { UsersService, WalletsService } from 'services';
 import { UserContext } from 'decorators';
 import { AuthGuard } from 'guards';
 
@@ -12,20 +13,26 @@ import { UnauthorizedException } from 'exceptions';
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly walletsService: WalletsService
+  ) {}
 
   @Get('/currentUser')
   @ApiBearerAuth()
   @ApiOkResponse({ type: UserContextModel })
-  async getCurrentUser(@UserContext() userContext: UserContextModel) {
+  async getCurrentUser(@UserContext() userContext: IUserContext) {
     const user = await this.usersService.getUserById(userContext.id);
 
     if (!user) throw new UnauthorizedException();
 
+    const wallets = await this.walletsService.getWalletsByUserById(user.id);
+
     return {
       id: user.id,
       name: user.name,
-      kycStatus: user.kycStatus
+      kycStatus: user.kycStatus,
+      wallets
     } as UserContextModel;
   }
 }

@@ -15,10 +15,7 @@ export class KycController {
 
   @Post('/callback')
   @ApiOkResponse()
-  callback(@Body() { reference, event, ...params }: KycCallbackDto) {
-    console.log('KycCallbackDto', { reference, event });
-    console.log('KycCallbackDto-params', params);
-
+  callback(@Body() { reference, event }: KycCallbackDto) {
     return this.kycService.verifyCallback(reference, event);
   }
 

@@ -40,7 +40,7 @@ jobs:
           jsonnet libs/ci_image.libsonnet -A env=prod -A project=polkapad -A image=sss > versions/out.json
           git config user.email "${{ env.GIT_COMMIT_AUTHOR_EMAIL }}"
           git config user.name "${{ env.GIT_COMMIT_AUTHOR_NAME }}"
-          git add versions/${{github.repository}}.libsonnet && git commit -m "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }} ${{ env.GIT_COMMIT_SHORT_SHA }}" && git push || true
+          git add versions/out.json && git commit -m "${{ env.GIT_COMMIT_MESSAGE_SUBJECT }} ${{ env.GIT_COMMIT_SHORT_SHA }}" && git push || true
 
       - name: AWS cli install action
         uses: chrislennon/action-aws-cli@1.1

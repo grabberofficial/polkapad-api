@@ -18,8 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - id: setup-jsonnet
-        uses: zendesk/setup-jsonnet@v1
+      - uses: kobtea/setup-jsonnet-action@v1
 
       - name: Clone Argo repo
         uses: actions/checkout@v3

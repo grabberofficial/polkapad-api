@@ -63,7 +63,7 @@ jobs:
 
       - name: ECR login
         run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin $ECR
-        if: ${{ github.event_name == 'push' ||&& github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
 
       - name: Push image
         run: docker push $TAG

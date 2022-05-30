@@ -41,7 +41,7 @@ export class OtpService {
     const newOtp = {
       ...info,
       hashedCode,
-      expiresAt: moment().add(1, 'hours').toDate()
+      expiresAt: moment().add(5, 'minutes').toDate()
     };
 
     await this.otpRepository.create({ data: newOtp });

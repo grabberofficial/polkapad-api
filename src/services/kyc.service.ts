@@ -9,6 +9,8 @@ import { KycRepository, PrismaRepository } from 'repositories';
 export class KycService {
   private readonly usersRepository: Prisma.UserDelegate<Prisma.RejectOnNotFound>;
 
+  private readonly kycCallbacksRepository: Prisma.KycCallbackDelegate<Prisma.RejectOnNotFound>;
+
   private readonly kycRepository: KycRepository;
 
   constructor(
@@ -16,6 +18,7 @@ export class KycService {
     kycRepository: KycRepository
   ) {
     this.usersRepository = prismaRepository.user;
+    this.kycCallbacksRepository = prismaRepository.kycCallback;
     this.kycRepository = kycRepository;
   }
 
@@ -23,6 +26,15 @@ export class KycService {
     const salt = await genSalt(12);
 
     return hash(`KYC_VERIFICATION_${userId}`, salt);
+  }
+
+  public async saveCallback(kycId: string, event: string): Promise<void> {
+    await this.kycCallbacksRepository.create({
+      data: {
+        kycId,
+        event
+      }
+    });
   }
 
   public async verifyCallback(kycId: string, event: string): Promise<void> {

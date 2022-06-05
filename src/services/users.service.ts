@@ -1,3 +1,5 @@
+import { toLower } from 'lodash';
+
 import { Injectable } from '@nestjs/common';
 
 import { Prisma, User } from '@prisma/client';
@@ -32,6 +34,10 @@ export class UsersService {
   public async createUser(info: Prisma.UserCreateInput): Promise<User> {
     const newUser = { ...info };
 
+    if (info.email) {
+      newUser.email = toLower(info.email);
+    }
+
     if (info.password) {
       newUser.password = await this.encryptPassword(info.password);
     }
@@ -58,7 +64,7 @@ export class UsersService {
   public getUserByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findUnique({
       where: {
-        email
+        email: toLower(email)
       }
     });
   }

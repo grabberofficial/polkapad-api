@@ -45,6 +45,13 @@ model Otp {
   type       CodeTypes @default(SIGNIN)
 }
 
+model KycCallback {
+  id        String   @id @default(cuid())
+  kycId     String
+  event     String
+  createdAt DateTime @default(now())
+}
+
 enum CodeTypes {
   SIGNIN
   RESTORE_PASSWORD

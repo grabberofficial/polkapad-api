@@ -1,12 +1,13 @@
+import { stringify as qsStringify } from 'qs';
 import { Injectable } from '@nestjs/common';
 import { ServerClient, TemplatedMessage } from 'postmark';
 
 import { UserModel } from 'models';
 import { token } from 'config/postmark';
+import { serviceUrl } from 'config/system';
 
 const DEFAULT_FROM = 'hello@polkapad.network';
 const PRODUCT_NAME = 'Polkapad';
-const DOMAIN = 'app.polkapad.codes';
 
 const MAGIC_LINK_TEMPLATE = 'magic-link';
 const PASSWORD_RESET_TEMPLATE = 'password-reset';
@@ -19,14 +20,10 @@ export class MailService {
     this.client = new ServerClient(token);
   }
 
-  test(): ServerClient {
-    return this.client;
-  }
-
-  send(to, templateName: string, templateModel: object) {
+  send(to: string, templateName: string, templateModel: object) {
     const options: TemplatedMessage = {
       From: DEFAULT_FROM,
-      To: to || 'test@email.com',
+      To: to,
       TemplateAlias: templateName,
       TemplateModel: templateModel,
       TrackOpens: false
@@ -36,22 +33,30 @@ export class MailService {
   }
 
   async sendMagicLinkToUser(user: UserModel, code: string) {
-    const actionUrl = `https://${DOMAIN}/auth/magic-link?email=${user.email}&code=${code}`;
+    const query = qsStringify({ email: user.email, code });
+
+    const actionUrl = `https://${serviceUrl}/auth/magic-link?${query}`;
+
     const model = {
       action_url: actionUrl,
       name: user.name,
       product_name: PRODUCT_NAME
     };
+
     await this.send(user.email, MAGIC_LINK_TEMPLATE, model);
   }
 
   async sendResetPasswordToUser(user: UserModel, code: string) {
-    const actionUrl = `https://${DOMAIN}/auth/password-reset?email=${user.email}&code=${code}`;
+    const query = qsStringify({ email: user.email, code });
+
+    const actionUrl = `https://${serviceUrl}/auth/password-reset?${query}`;
+
     const model = {
       action_url: actionUrl,
       name: user.name,
       product_name: PRODUCT_NAME
     };
+
     await this.send(user.email, PASSWORD_RESET_TEMPLATE, model);
   }
 }

@@ -30,11 +30,6 @@ export class KycRepository extends ApiRepository {
       }
     };
 
-    console.log('KycRepository-getVerificationUrl-callbackUrl', callbackUrl);
-    console.log('KycRepository-getVerificationUrl-redirectUrl', redirectUrl);
-    console.log('KycRepository-getVerificationUrl-payload');
-    console.log(payload);
-
     const kycResponse = await this.postRequest(
       'https://api.shuftipro.com/',
       payload,

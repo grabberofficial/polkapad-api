@@ -1,22 +1,33 @@
+import { KycStatusTypes } from '@prisma/client';
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOkResponse } from '@nestjs/swagger';
 
-import { KycService } from 'services';
+import { KycService, UsersService } from 'services';
 import { AuthGuard } from 'guards';
 import { UserContext } from 'decorators';
-import { InternalServerErrorException } from 'exceptions';
+import {
+  InternalServerErrorException,
+  KycAlreadyAcceptedException
+} from 'exceptions';
 import { UserContextModel } from 'models';
 import { KycCallbackDto } from 'dto/kyc';
 
 @Controller('kyc')
 @ApiTags('kyc')
 export class KycController {
-  constructor(private readonly kycService: KycService) {}
+  constructor(
+    private readonly kycService: KycService,
+    private readonly usersService: UsersService
+  ) {}
 
   @Post('/callback')
   @ApiOkResponse()
-  callback(@Body() { reference, event }: KycCallbackDto) {
-    return this.kycService.verifyCallback(reference, event);
+  async callback(@Body() { reference, event }: KycCallbackDto) {
+    try {
+      await this.kycService.saveCallback(reference, event);
+
+      return await this.kycService.verifyCallback(reference, event);
+    } catch {}
   }
 
   @Get('/verification-url')
@@ -24,11 +35,14 @@ export class KycController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: String })
   async getVerificationUrl(@UserContext() userContext: UserContextModel) {
+    const user = await this.usersService.getUserById(userContext.id);
+
+    if (user.kycStatus === KycStatusTypes.ACCEPTED)
+      throw new KycAlreadyAcceptedException();
+
     try {
       return await this.kycService.getVerificationUrl(userContext.id);
-    } catch (e) {
-      console.error(e);
-
+    } catch {
       throw new InternalServerErrorException('Failed to get verification url');
     }
   }

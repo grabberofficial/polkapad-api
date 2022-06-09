@@ -4,6 +4,10 @@ import { Injectable } from '@nestjs/common';
 import { genSalt, hash } from 'bcryptjs';
 
 import { KycRepository, PrismaRepository } from 'repositories';
+import {
+  KYC_CALLBACK_ACCEPTED_EVENTS,
+  KYC_CALLBACK_DECLINED_EVENTS
+} from 'constants/kyc.constants';
 
 @Injectable()
 export class KycService {
@@ -38,15 +42,18 @@ export class KycService {
   }
 
   public async verifyCallback(kycId: string, event: string): Promise<void> {
-    const accepted = ['verification.accepted'];
-    const declined = ['verification.declined', 'request.timeout'];
-
     let kycStatus: KycStatusTypes = KycStatusTypes.IN_PROGRESS;
 
-    if (accepted.includes(event)) {
+    if (KYC_CALLBACK_ACCEPTED_EVENTS.includes(event)) {
       kycStatus = KycStatusTypes.ACCEPTED;
-    } else if (declined.includes(event)) {
+    } else if (KYC_CALLBACK_DECLINED_EVENTS.includes(event)) {
       kycStatus = KycStatusTypes.DECLINED;
+
+      const declinedCount = await this.getDeclinedKycCallbacksCount(kycId);
+
+      if (declinedCount > 3) {
+        kycStatus = KycStatusTypes.BLOCKED;
+      }
     }
 
     await this.usersRepository.update({
@@ -57,6 +64,27 @@ export class KycService {
         kycStatus
       }
     });
+  }
+
+  public getKycCallbacksCountByEvents(
+    kycId: string,
+    events: string[]
+  ): Promise<number> {
+    return this.kycCallbacksRepository.count({
+      where: {
+        kycId,
+        event: {
+          in: events
+        }
+      }
+    });
+  }
+
+  public getDeclinedKycCallbacksCount(kycId: string): Promise<number> {
+    return this.getKycCallbacksCountByEvents(
+      kycId,
+      KYC_CALLBACK_DECLINED_EVENTS
+    );
   }
 
   public async getVerificationUrl(userId: string): Promise<string> {

@@ -8,6 +8,8 @@ export enum ExceptionTypeEnum {
   IncorrectEmailOrCode = 'IncorrectEmailOrCode',
   EmailAlreadyUsed = 'EmailAlreadyUsed',
   WalletAlreadyUsed = 'WalletAlreadyUsed',
+  KycAlreadyAccepted = 'KycAlreadyAccepted',
+  KycBlocked = 'KycBlocked',
   NotFound = 'NotFound',
   BadRequest = 'BadRequest',
   Conflict = 'Conflict'

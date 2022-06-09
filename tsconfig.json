@@ -26,6 +26,7 @@
       "models": ["./src/models"],
       "models/*": ["./src/models/*"],
       "dto/*": ["./src/dto/*"],
+      "constants/*": ["./src/constants/*"]
     },
     "declaration": true,
     "removeComments": true,

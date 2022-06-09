@@ -101,7 +101,7 @@ export class AuthController {
 
   @Post('password/register')
   @ApiCreatedResponse({ type: UserModel })
-  async register(@Body() { password, name, email }: CreateUserDto) {
+  async register(@Body() { password, name, promocode, email }: CreateUserDto) {
     const existUser = await this.usersService.getUserByEmail(email);
 
     if (existUser) throw new EmailAlreadyUsedException();
@@ -109,7 +109,8 @@ export class AuthController {
     return this.usersService.createUser({
       email,
       password,
-      name
+      name,
+      promocode
     });
   }
 

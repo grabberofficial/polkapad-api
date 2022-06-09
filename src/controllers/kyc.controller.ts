@@ -7,7 +7,8 @@ import { AuthGuard } from 'guards';
 import { UserContext } from 'decorators';
 import {
   InternalServerErrorException,
-  KycAlreadyAcceptedException
+  KycAlreadyAcceptedException,
+  KycBlockedException
 } from 'exceptions';
 import { UserContextModel } from 'models';
 import { KycCallbackDto } from 'dto/kyc';
@@ -39,6 +40,9 @@ export class KycController {
 
     if (user.kycStatus === KycStatusTypes.ACCEPTED)
       throw new KycAlreadyAcceptedException();
+
+    if (user.kycStatus === KycStatusTypes.BLOCKED)
+      throw new KycBlockedException();
 
     try {
       return await this.kycService.getVerificationUrl(userContext.id);

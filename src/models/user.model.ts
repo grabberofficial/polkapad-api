@@ -18,6 +18,9 @@ export class UserModel implements User {
   password: string;
 
   @ApiProperty({ required: false })
+  promocode: string;
+
+  @ApiProperty({ required: false })
   kycId: string;
 
   @ApiProperty({ required: false, enum: KycStatusTypes })

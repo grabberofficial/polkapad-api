@@ -6,8 +6,14 @@ export class KycAlreadyAcceptedException extends BaseException {
   constructor() {
     super(
       HttpStatus.BAD_REQUEST,
-      ExceptionTypeEnum.WalletAlreadyUsed,
-      'Wallet already used'
+      ExceptionTypeEnum.KycAlreadyAccepted,
+      'Kyc already accepted'
     );
+  }
+}
+
+export class KycBlockedException extends BaseException {
+  constructor() {
+    super(HttpStatus.BAD_REQUEST, ExceptionTypeEnum.KycBlocked, 'Kyc blocked');
   }
 }

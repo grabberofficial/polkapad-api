@@ -31,6 +31,14 @@ export class KycController {
     } catch {}
   }
 
+  @Post('/status')
+  @ApiOkResponse()
+  async getStatus(@UserContext() userContext: UserContextModel) {
+    const user = await this.usersService.getUserById(userContext.id);
+
+    return user.kycStatus;
+  }
+
   @Get('/verification-url')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()

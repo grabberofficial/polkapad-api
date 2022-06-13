@@ -30,14 +30,21 @@ export class KycController {
       const user = await this.usersService.getUserByKycId(reference);
 
       if (user) {
-        await this.kycService.saveCallback(user.id, reference, event);
-
-        await this.kycService.verifyCallback(
+        const isValid = await this.kycService.verifyReference(
           user.id,
-          reference,
-          event,
-          verification_data
+          reference
         );
+
+        if (isValid) {
+          await this.kycService.saveCallback(user.id, reference, event);
+
+          await this.kycService.verifyCallback(
+            user.id,
+            reference,
+            event,
+            verification_data
+          );
+        }
       }
     } catch {}
   }

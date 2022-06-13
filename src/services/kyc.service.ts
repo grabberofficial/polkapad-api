@@ -1,9 +1,10 @@
 import { KycStatusTypes, Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 
-import { genSalt, hash } from 'bcryptjs';
+import { genSalt, hash, compare } from 'bcryptjs';
 
 import { KycRepository, PrismaRepository } from 'repositories';
+import { secretKey } from 'config/kyc';
 import {
   KYC_CALLBACK_ACCEPTED_EVENTS,
   KYC_CALLBACK_DECLINED_EVENTS
@@ -32,7 +33,16 @@ export class KycService {
   private async generateKycId(userId: string): Promise<string> {
     const salt = await genSalt(12);
 
-    return hash(`KYC_VERIFICATION_${userId}`, salt);
+    return hash(`KYC-${userId}-${secretKey}`, salt);
+  }
+
+  public async verifyReference(
+    userId: string,
+    reference?: string
+  ): Promise<boolean> {
+    if (!reference) return false;
+
+    return compare(`KYC-${userId}-${secretKey}`, reference);
   }
 
   public async saveCallback(

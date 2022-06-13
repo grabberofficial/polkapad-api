@@ -23,16 +23,32 @@ export class KycController {
 
   @Post('/callback')
   @ApiOkResponse()
-  async callback(@Body() { reference, event }: KycCallbackDto) {
-    try {
-      await this.kycService.saveCallback(reference, event);
+  async callback(
+    @Body() { reference, event, verification_data, ...params }: KycCallbackDto
+  ) {
+    console.log('kyc-verification_data', verification_data);
+    console.log('kyc-callback-params', params);
 
-      return await this.kycService.verifyCallback(reference, event);
+    try {
+      const user = await this.usersService.getUserByKycId(reference);
+
+      if (user) {
+        await this.kycService.saveCallback(user.id, reference, event);
+
+        await this.kycService.verifyCallback(
+          user.id,
+          reference,
+          event,
+          verification_data
+        );
+      }
     } catch {}
   }
 
-  @Post('/status')
-  @ApiOkResponse()
+  @Get('/status')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: String })
   async getStatus(@UserContext() userContext: UserContextModel) {
     const user = await this.usersService.getUserById(userContext.id);
 

@@ -60,16 +60,19 @@ export class KycService {
     if (KYC_CALLBACK_ACCEPTED_EVENTS.includes(event)) {
       kycStatus = KycStatusTypes.ACCEPTED;
 
-      if (verificationData) {
+      if (verificationData && verificationData?.document) {
+        const verificationDocument = verificationData?.document;
+
         await this.kycResultsRepository.create({
           data: {
             kycId,
             userId,
-            firstName: verificationData?.name?.first_name,
-            middleName: verificationData?.name?.middle_name,
-            lastName: verificationData?.name?.last_name,
-            dateOfBirth: verificationData?.dob,
-            gender: verificationData?.gender
+            firstName: verificationDocument.name?.first_name,
+            middleName: verificationDocument.name?.middle_name,
+            lastName: verificationDocument.name?.last_name,
+            dateOfBirth: verificationDocument.dob,
+            country: verificationDocument.country,
+            gender: verificationDocument.gender
           }
         });
       }

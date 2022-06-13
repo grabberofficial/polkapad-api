@@ -62,6 +62,7 @@ model KycResult {
   middleName    String?
   lastName      String?
   gender        String?
+  country       String?
   dateOfBirth   String?
   createdAt     DateTime  @default(now())
 }

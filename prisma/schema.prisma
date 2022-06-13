@@ -9,45 +9,63 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String  @unique
-  name        String?
-  password    String?
-  promocode   String?
-  kycId       String?  @unique
-  kycStatus   KycStatusTypes @default(NOT_VERIFIED)
-  otp         Otp[]
-  wallets     Wallet[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  password      String?
+  promocode     String?
+  kycId         String?         @unique
+  kycStatus     KycStatusTypes  @default(NOT_VERIFIED)
+  kycCallbacks  KycCallback[]
+  kycResults    KycResult[]
+  otp           Otp[]
+  wallets       Wallet[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 model Wallet {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
   name      String
-  value     String  @unique
+  value     String    @unique
   user      User      @relation(fields: [userId], references: [id])
   userId    String
 }
 
 model Otp {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
 
   expiresAt  DateTime
   hashedCode String
-  user       User      @relation(fields: [userId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
   userId     String
-  type       CodeTypes @default(SIGNIN)
+  type       CodeTypes  @default(SIGNIN)
 }
 
 model KycCallback {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   kycId     String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
   event     String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
+
+model KycResult {
+  id            String    @id @default(cuid())
+  kycId         String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  firstName     String
+  middleName    String?
+  lastName      String?
+  gender        String?
+  dateOfBirth   String?
+  createdAt     DateTime  @default(now())
+}
+
 
 enum CodeTypes {
   SIGNIN

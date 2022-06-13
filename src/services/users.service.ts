@@ -69,6 +69,14 @@ export class UsersService {
     });
   }
 
+  public getUserByKycId(kycId: string): Promise<User | null> {
+    return this.usersRepository.findUnique({
+      where: {
+        kycId
+      }
+    });
+  }
+
   public getUserById(userId: string): Promise<User | null> {
     return this.usersRepository.findUnique({
       where: {

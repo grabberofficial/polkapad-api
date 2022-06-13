@@ -15,6 +15,8 @@ export class KycService {
 
   private readonly kycCallbacksRepository: Prisma.KycCallbackDelegate<Prisma.RejectOnNotFound>;
 
+  private readonly kycResultsRepository: Prisma.KycResultDelegate<Prisma.RejectOnNotFound>;
+
   private readonly kycRepository: KycRepository;
 
   constructor(
@@ -23,6 +25,7 @@ export class KycService {
   ) {
     this.usersRepository = prismaRepository.user;
     this.kycCallbacksRepository = prismaRepository.kycCallback;
+    this.kycResultsRepository = prismaRepository.kycResult;
     this.kycRepository = kycRepository;
   }
 
@@ -32,24 +35,51 @@ export class KycService {
     return hash(`KYC_VERIFICATION_${userId}`, salt);
   }
 
-  public async saveCallback(kycId: string, event: string): Promise<void> {
+  public async saveCallback(
+    userId: string,
+    kycId: string,
+    event: string
+  ): Promise<void> {
     await this.kycCallbacksRepository.create({
       data: {
+        userId,
         kycId,
         event
       }
     });
   }
 
-  public async verifyCallback(kycId: string, event: string): Promise<void> {
+  public async verifyCallback(
+    userId: string,
+    kycId: string,
+    event: string,
+    verificationData?: any
+  ): Promise<void> {
     let kycStatus: KycStatusTypes = KycStatusTypes.IN_PROGRESS;
 
     if (KYC_CALLBACK_ACCEPTED_EVENTS.includes(event)) {
       kycStatus = KycStatusTypes.ACCEPTED;
+
+      if (verificationData) {
+        await this.kycResultsRepository.create({
+          data: {
+            kycId,
+            userId,
+            firstName: verificationData?.name?.first_name,
+            middleName: verificationData?.name?.middle_name,
+            lastName: verificationData?.name?.last_name,
+            dateOfBirth: verificationData?.dob,
+            gender: verificationData?.gender
+          }
+        });
+      }
     } else if (KYC_CALLBACK_DECLINED_EVENTS.includes(event)) {
       kycStatus = KycStatusTypes.DECLINED;
 
-      const declinedCount = await this.getDeclinedKycCallbacksCount(kycId);
+      const declinedCount = await this.getDeclinedKycCallbacksCount(
+        userId,
+        kycId
+      );
 
       if (declinedCount > 3) {
         kycStatus = KycStatusTypes.BLOCKED;
@@ -67,11 +97,13 @@ export class KycService {
   }
 
   public getKycCallbacksCountByEvents(
+    userId: string,
     kycId: string,
     events: string[]
   ): Promise<number> {
     return this.kycCallbacksRepository.count({
       where: {
+        userId,
         kycId,
         event: {
           in: events
@@ -80,8 +112,12 @@ export class KycService {
     });
   }
 
-  public getDeclinedKycCallbacksCount(kycId: string): Promise<number> {
+  public getDeclinedKycCallbacksCount(
+    userId: string,
+    kycId: string
+  ): Promise<number> {
     return this.getKycCallbacksCountByEvents(
+      userId,
       kycId,
       KYC_CALLBACK_DECLINED_EVENTS
     );

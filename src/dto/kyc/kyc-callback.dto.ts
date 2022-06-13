@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 export class KycCallbackDto {
   @IsNotEmpty()
@@ -9,4 +9,8 @@ export class KycCallbackDto {
   @IsNotEmpty()
   @ApiProperty()
   event: string;
+
+  @IsOptional()
+  @ApiProperty()
+  verification_data: any;
 }

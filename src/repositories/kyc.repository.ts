@@ -10,7 +10,7 @@ export class KycRepository extends ApiRepository {
       callback_url: callbackUrl,
       redirect_url: redirectUrl,
       verification_mode: 'any',
-      ttl: 60,
+      ttl: 10,
       face: {
         proof: ''
       },

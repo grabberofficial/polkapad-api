@@ -136,10 +136,16 @@ export class KycService {
     );
   }
 
-  public async getVerificationUrl(userId: string): Promise<string> {
+  public async getVerificationUrl(
+    userId: string,
+    userEmail: string
+  ): Promise<string> {
     const kycId = await this.generateKycId(userId);
 
-    const verificationUrl = await this.kycRepository.getVerificationUrl(kycId);
+    const verificationUrl = await this.kycRepository.getVerificationUrl(
+      kycId,
+      userEmail
+    );
 
     await this.usersRepository.update({
       where: {

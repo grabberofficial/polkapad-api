@@ -4,9 +4,13 @@ import { ApiRepository } from './base';
 
 @Injectable()
 export class KycRepository extends ApiRepository {
-  public async getVerificationUrl(kycId: string): Promise<string> {
+  public async getVerificationUrl(
+    reference: string,
+    email?: string
+  ): Promise<string> {
     const payload = {
-      reference: kycId,
+      reference,
+      email,
       callback_url: callbackUrl,
       redirect_url: redirectUrl,
       verification_mode: 'any',

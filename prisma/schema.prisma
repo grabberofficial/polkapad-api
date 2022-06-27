@@ -71,6 +71,8 @@ model KycResult {
 enum CodeTypes {
   SIGNIN
   RESTORE_PASSWORD
+  WALLET
+  KYC
 }
 
 enum KycStatusTypes {

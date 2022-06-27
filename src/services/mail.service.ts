@@ -31,14 +31,20 @@ export class MailService {
     return this.client.sendEmailWithTemplate(options);
   }
 
-  async sendMagicLinkToUser(user: UserModel, code: string) {
-    const query = qsStringify({ email: user.email, code });
+  async sendMagicLinkToUser(
+    user: UserModel,
+    code: string,
+    buttonText: string = 'Sign In',
+    params?: Record<string, string>
+  ) {
+    const query = qsStringify({ email: user.email, code, ...params });
 
     const actionUrl = `https://${frontendUrl}/auth/magic-link?${query}`;
 
     const model = {
       action_url: actionUrl,
       name: user.name,
+      button_text: buttonText,
       product_name: PRODUCT_NAME
     };
 

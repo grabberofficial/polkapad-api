@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CodeTypes, Otp, Prisma } from '@prisma/client';
+import { Otp, Prisma } from '@prisma/client';
 import * as moment from 'moment';
 import { genSalt, hash, compare } from 'bcryptjs';
 
@@ -49,11 +49,10 @@ export class OtpService {
     return code;
   }
 
-  public getLatestCodeByUserId(userId: string, type: CodeTypes): Promise<Otp> {
+  public getLatestCodeByUserId(userId: string): Promise<Otp> {
     return this.otpRepository.findFirst({
       where: {
         userId,
-        type
       },
       orderBy: {
         createdAt: 'desc'

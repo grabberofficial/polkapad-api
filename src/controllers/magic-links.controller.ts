@@ -35,13 +35,13 @@ export class MagicLinksController {
       type: type === MagicLinkTypeEnum.Wallet ? CodeTypes.WALLET : CodeTypes.KYC
     });
 
-    const redirectUrl = MagicLinkTypeEnum.Wallet
-      ? 'profile?wallet=true'
-      : 'profile?kyc=true';
+    const redirectUrl =
+      type === MagicLinkTypeEnum.Wallet
+        ? '/profile?wallet=true'
+        : '/profile?kyc=true';
 
-    const buttonText = MagicLinkTypeEnum.Wallet
-      ? 'Verify wallets'
-      : 'KYC verification';
+    const buttonText =
+      type === MagicLinkTypeEnum.Wallet ? 'Verify wallets' : 'KYC verification';
 
     await this.mailService.sendMagicLinkToUser(user, code, buttonText, {
       url: redirectUrl

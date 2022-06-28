@@ -52,10 +52,7 @@ export class AuthController {
 
     if (!user) throw new IncorrectEmailOrCodeException();
 
-    const otpCode = await this.otpService.getLatestCodeByUserId(
-      user.id,
-      CodeTypes.SIGNIN
-    );
+    const otpCode = await this.otpService.getLatestCodeByUserId(user.id);
 
     if (!otpCode)
       throw new NotFoundException(
@@ -157,10 +154,7 @@ export class AuthController {
 
     if (!user) throw new IncorrectEmailOrCodeException();
 
-    const otpCode = await this.otpService.getLatestCodeByUserId(
-      user.id,
-      CodeTypes.RESTORE_PASSWORD
-    );
+    const otpCode = await this.otpService.getLatestCodeByUserId(user.id);
 
     if (!otpCode)
       throw new NotFoundException(

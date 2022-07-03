@@ -4,7 +4,6 @@ import { CodeTypes } from '@prisma/client';
 
 import { IUserContext } from 'abstractions/interfaces';
 import { UsersService, OtpService, JwtService, MailService } from 'services';
-import { UserModel } from 'models';
 
 import {
   LoginDto,
@@ -79,7 +78,7 @@ export class AuthController {
   }
 
   @Post('code/register')
-  @ApiCreatedResponse({ type: UserModel })
+  @ApiCreatedResponse({ type: String })
   async registerByCode(@Body() { email }: CreateUserOtpDto) {
     const existUser = await this.usersService.getUserByEmail(email);
 
@@ -93,22 +92,32 @@ export class AuthController {
 
     await this.mailService.sendMagicLinkToUser(user, code);
 
-    return user;
+    const userContext: IUserContext = {
+      id: user.id
+    };
+
+    return this.jwtService.signAsync(userContext);
   }
 
   @Post('password/register')
-  @ApiCreatedResponse({ type: UserModel })
+  @ApiCreatedResponse({ type: String })
   async register(@Body() { password, name, promocode, email }: CreateUserDto) {
     const existUser = await this.usersService.getUserByEmail(email);
 
     if (existUser) throw new EmailAlreadyUsedException();
 
-    return this.usersService.createUser({
+    const user = await this.usersService.createUser({
       email,
       password,
       name,
       promocode
     });
+
+    const userContext: IUserContext = {
+      id: user.id
+    };
+
+    return this.jwtService.signAsync(userContext);
   }
 
   @Post('password/login')

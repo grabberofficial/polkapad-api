@@ -1,9 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags, ApiCreatedResponse } from '@nestjs/swagger';
-import { CodeTypes } from '@prisma/client';
+import { MagicCodeTypes } from '@prisma/client';
 
 import { IUserContext } from 'abstractions/interfaces';
-import { UsersService, OtpService, JwtService, MailService } from 'services';
+import {
+  UsersService,
+  MagicCodesService,
+  JwtService,
+  MailService
+} from 'services';
 
 import {
   LoginDto,
@@ -11,7 +16,7 @@ import {
   SendCodeDto,
   RestorePasswordDto
 } from 'dto/auth';
-import { CreateUserDto, CreateUserOtpDto } from 'dto/users';
+import { CreateUserDto, CreateUserByCodeDto } from 'dto/users';
 import {
   EmailAlreadyUsedException,
   IncorrectEmailOrCodeException,
@@ -25,7 +30,7 @@ export class AuthController {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
-    private readonly otpService: OtpService,
+    private readonly magicCodesService: MagicCodesService,
     private readonly mailService: MailService
   ) {}
 
@@ -36,9 +41,9 @@ export class AuthController {
 
     if (!user) throw new NotFoundException('UserByEmail', email);
 
-    const code = await this.otpService.createOtp({
+    const code = await this.magicCodesService.createMagicCode({
       userId: user.id,
-      type: CodeTypes.SIGNIN
+      type: MagicCodeTypes.SIGNIN
     });
 
     await this.mailService.sendMagicLinkToUser(user, code);
@@ -51,24 +56,27 @@ export class AuthController {
 
     if (!user) throw new IncorrectEmailOrCodeException();
 
-    const otpCode = await this.otpService.getLatestCodeByUserId(user.id);
+    const magicCode = await this.magicCodesService.getLatestCodeByUserId(
+      user.id,
+      MagicCodeTypes.SIGNIN
+    );
 
-    if (!otpCode)
+    if (!magicCode)
       throw new NotFoundException(
-        'OtpCodeByUserEmail',
+        'MagicCodeByUserEmail',
         email,
         `No code found for email: ${email}`
       );
 
-    const isValidCode = await this.otpService.compareCode(
+    const isValidCode = await this.magicCodesService.compareCode(
       code,
-      otpCode.hashedCode,
-      otpCode.expiresAt
+      magicCode.hashedCode,
+      magicCode.expiresAt
     );
 
     if (!isValidCode) throw new IncorrectEmailOrCodeException();
 
-    await this.otpService.deleteCodesByUserId(user.id);
+    await this.magicCodesService.deleteCodesByUserId(user.id);
 
     const userContext: IUserContext = {
       id: user.id
@@ -79,15 +87,15 @@ export class AuthController {
 
   @Post('code/register')
   @ApiCreatedResponse({ type: String })
-  async registerByCode(@Body() { email }: CreateUserOtpDto) {
+  async registerByCode(@Body() { email }: CreateUserByCodeDto) {
     const existUser = await this.usersService.getUserByEmail(email);
 
     if (existUser) throw new EmailAlreadyUsedException();
 
     const user = await this.usersService.createUser({ email });
-    const code = await this.otpService.createOtp({
+    const code = await this.magicCodesService.createMagicCode({
       userId: user.id,
-      type: CodeTypes.SIGNIN
+      type: MagicCodeTypes.SIGNIN
     });
 
     await this.mailService.sendMagicLinkToUser(user, code);
@@ -148,9 +156,9 @@ export class AuthController {
 
     if (!user) throw new NotFoundException('UserByEmail', email);
 
-    const code = await this.otpService.createOtp({
+    const code = await this.magicCodesService.createMagicCode({
       userId: user.id,
-      type: CodeTypes.SIGNIN
+      type: MagicCodeTypes.SIGNIN
     });
 
     await this.mailService.sendResetPasswordToUser(user, code);
@@ -163,24 +171,27 @@ export class AuthController {
 
     if (!user) throw new IncorrectEmailOrCodeException();
 
-    const otpCode = await this.otpService.getLatestCodeByUserId(user.id);
+    const magicCode = await this.magicCodesService.getLatestCodeByUserId(
+      user.id,
+      MagicCodeTypes.RESTORE_PASSWORD
+    );
 
-    if (!otpCode)
+    if (!magicCode)
       throw new NotFoundException(
-        'OtpCodeByUserEmail',
+        'MagicCodeByUserEmail',
         email,
         `No code found for email: ${email}`
       );
 
-    const isValidCode = await this.otpService.compareCode(
+    const isValidCode = await this.magicCodesService.compareCode(
       code,
-      otpCode.hashedCode,
-      otpCode.expiresAt
+      magicCode.hashedCode,
+      magicCode.expiresAt
     );
 
     if (!isValidCode) throw new IncorrectEmailOrCodeException();
 
-    await this.otpService.deleteCodesByUserId(user.id);
+    await this.magicCodesService.deleteCodesByUserId(user.id);
 
     await this.usersService.updateUserPasswordById(user.id, password);
 

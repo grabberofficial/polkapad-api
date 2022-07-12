@@ -1,10 +1,10 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
-import { CodeTypes } from '@prisma/client';
+import { MagicCodeTypes } from '@prisma/client';
 import { IUserContext } from 'abstractions/interfaces';
 import { MagicLinkTypeEnum } from 'abstractions/enums';
 
-import { MailService, OtpService, UsersService } from 'services';
+import { MailService, MagicCodesService, UsersService } from 'services';
 import { UserContext } from 'decorators';
 import { AuthGuard } from 'guards';
 import { SendMagicLinkDto } from 'dto/magic-links';
@@ -16,7 +16,7 @@ import { NotFoundException } from 'exceptions';
 export class MagicLinksController {
   constructor(
     private readonly usersService: UsersService,
-    private readonly otpService: OtpService,
+    private readonly magicCodesService: MagicCodesService,
     private readonly mailService: MailService
   ) {}
 
@@ -30,9 +30,9 @@ export class MagicLinksController {
 
     if (!user) throw new NotFoundException('UserById', userContext.id);
 
-    const code = await this.otpService.createOtp({
+    const code = await this.magicCodesService.createMagicCode({
       userId: user.id,
-      type: type === MagicLinkTypeEnum.Wallet ? CodeTypes.WALLET : CodeTypes.KYC
+      type: MagicCodeTypes.SIGNIN
     });
 
     const redirectUrl =

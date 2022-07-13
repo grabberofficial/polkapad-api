@@ -18,10 +18,10 @@ model User {
   kycStatus     KycStatusTypes  @default(NOT_VERIFIED)
   kycCallbacks  KycCallback[]
   kycResults    KycResult[]
-  otp           Otp[]
+  magicCodes    MagicCode[]
   wallets       Wallet[]
-  createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  createdAt     DateTime        @default(now())
 }
 
 model Wallet {
@@ -33,15 +33,14 @@ model Wallet {
   userId    String
 }
 
-model Otp {
-  id        String      @id @default(cuid())
-  createdAt DateTime    @default(now())
-
-  expiresAt  DateTime
-  hashedCode String
-  user       User       @relation(fields: [userId], references: [id])
-  userId     String
-  type       CodeTypes  @default(SIGNIN)
+model MagicCode {
+  id            String          @id @default(uuid())
+  hashedCode    String
+  user          User            @relation(fields: [userId], references: [id])
+  userId        String
+  type          MagicCodeTypes  @default(SIGNIN)
+  expiresAt     DateTime
+  createdAt     DateTime        @default(now())
 }
 
 model KycCallback {
@@ -67,12 +66,9 @@ model KycResult {
   createdAt     DateTime  @default(now())
 }
 
-
-enum CodeTypes {
+enum MagicCodeTypes {
   SIGNIN
   RESTORE_PASSWORD
-  WALLET
-  KYC
 }
 
 enum KycStatusTypes {

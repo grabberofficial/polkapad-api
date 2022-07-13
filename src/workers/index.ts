@@ -1,1 +1,1 @@
-export * from './otp.worker';
+export * from './magic-codes.worker';

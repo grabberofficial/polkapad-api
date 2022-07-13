@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Otp, Prisma } from '@prisma/client';
-import * as moment from 'moment';
+import { MagicCode, MagicCodeTypes, Prisma } from '@prisma/client';
+import dayjs from 'dayjs';
 import { genSalt, hash, compare } from 'bcryptjs';
 
 import { PrismaRepository } from 'repositories';
@@ -8,22 +8,22 @@ import { PrismaRepository } from 'repositories';
 const OTP_DIGITS = '0123456789';
 
 @Injectable()
-export class OtpService {
-  private readonly otpRepository: Prisma.OtpDelegate<Prisma.RejectOnNotFound>;
+export class MagicCodesService {
+  private readonly magicCodeRepository: Prisma.MagicCodeDelegate<Prisma.RejectOnNotFound>;
 
   constructor(prismaRepository: PrismaRepository) {
-    this.otpRepository = prismaRepository.otp;
+    this.magicCodeRepository = prismaRepository.magicCode;
   }
 
-  private generateCode(otpLength = 6): string {
-    let otp = '';
+  private generateCode(magicCodeLength = 6): string {
+    let magicCode = '';
 
-    for (let i = 1; i <= otpLength; i++) {
+    for (let i = 1; i <= magicCodeLength; i++) {
       const index = Math.floor(Math.random() * OTP_DIGITS.length);
-      otp = otp + OTP_DIGITS[index];
+      magicCode = magicCode + OTP_DIGITS[index];
     }
 
-    return otp;
+    return magicCode;
   }
 
   private async encryptCode(code: string): Promise<string> {
@@ -32,27 +32,31 @@ export class OtpService {
     return hash(code, salt);
   }
 
-  public async createOtp(
-    info: Pick<Prisma.OtpUncheckedCreateInput, 'userId' | 'type'>
+  public async createMagicCode(
+    info: Pick<Prisma.MagicCodeUncheckedCreateInput, 'userId' | 'type'>
   ): Promise<string> {
     const code = this.generateCode();
     const hashedCode = await this.encryptCode(code);
 
-    const newOtp = {
+    const newMagicCode = {
       ...info,
       hashedCode,
-      expiresAt: moment().add(5, 'minutes').toDate()
+      expiresAt: dayjs().add(5, 'minutes').toDate()
     };
 
-    await this.otpRepository.create({ data: newOtp });
+    await this.magicCodeRepository.create({ data: newMagicCode });
 
     return code;
   }
 
-  public getLatestCodeByUserId(userId: string): Promise<Otp> {
-    return this.otpRepository.findFirst({
+  public getLatestCodeByUserId(
+    userId: string,
+    type: MagicCodeTypes
+  ): Promise<MagicCode> {
+    return this.magicCodeRepository.findFirst({
       where: {
         userId,
+        type
       },
       orderBy: {
         createdAt: 'desc'
@@ -61,7 +65,7 @@ export class OtpService {
   }
 
   public async deleteCodesByUserId(userId: string): Promise<void> {
-    await this.otpRepository.deleteMany({
+    await this.magicCodeRepository.deleteMany({
       where: {
         userId
       }
@@ -69,10 +73,10 @@ export class OtpService {
   }
 
   public async deleteOutdatedCodes() {
-    await this.otpRepository.deleteMany({
+    await this.magicCodeRepository.deleteMany({
       where: {
         expiresAt: {
-          lt: moment().toDate()
+          lt: dayjs().toDate()
         }
       }
     });
@@ -84,7 +88,7 @@ export class OtpService {
     expiresAt: Date
   ): Promise<boolean> {
     const isValid = await compare(code, hashedCode);
-    const isNotExpired = moment().isBefore(moment(expiresAt).format());
+    const isNotExpired = dayjs().isBefore(dayjs(expiresAt));
 
     return isValid && isNotExpired;
   }

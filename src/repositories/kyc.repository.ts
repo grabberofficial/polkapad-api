@@ -20,6 +20,12 @@ export class KycRepository extends ApiRepository {
       },
       document: {
         proof: '',
+        supported_types: ['id_card', 'passport', 'driving_license'],
+        verification_instructions: {
+          allow_scanned: '1',
+          allow_screenshot: '1',
+          allow_photocopy: '1'
+        },
         additional_proof: '',
         name: '',
         dob: '',
@@ -29,7 +35,6 @@ export class KycRepository extends ApiRepository {
         issue_date: '',
         allow_offline: '1',
         allow_online: '1',
-        supported_types: ['id_card', 'passport'],
         gender: ''
       }
     };

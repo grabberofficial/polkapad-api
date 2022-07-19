@@ -5,7 +5,7 @@ import { genSalt, hash, compare } from 'bcryptjs';
 
 import { PrismaRepository } from 'repositories';
 
-const OTP_DIGITS = '0123456789';
+const MAGIC_DIGITS = '0123456789';
 
 @Injectable()
 export class MagicCodesService {
@@ -19,8 +19,8 @@ export class MagicCodesService {
     let magicCode = '';
 
     for (let i = 1; i <= magicCodeLength; i++) {
-      const index = Math.floor(Math.random() * OTP_DIGITS.length);
-      magicCode = magicCode + OTP_DIGITS[index];
+      const index = Math.floor(Math.random() * MAGIC_DIGITS.length);
+      magicCode = magicCode + MAGIC_DIGITS[index];
     }
 
     return magicCode;

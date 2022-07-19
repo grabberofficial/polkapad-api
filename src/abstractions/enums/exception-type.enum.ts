@@ -1,6 +1,7 @@
 export enum ExceptionTypeEnum {
   InternalServerError = 'InternalServerError',
   ValidationError = 'ValidationError',
+  DatabaseError = 'DatabaseError',
   Unauthorized = 'Unauthorized',
   Authorized = 'Authorized',
   AccessDenied = 'AccessDenied',

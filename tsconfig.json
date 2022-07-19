@@ -28,6 +28,7 @@
       "dto/*": ["./src/dto/*"],
       "constants/*": ["./src/constants/*"]
     },
+    "esModuleInterop": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,

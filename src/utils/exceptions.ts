@@ -1,6 +1,7 @@
+import { isString } from 'lodash';
+import { HttpStatus } from '@nestjs/common';
 import { IException } from 'abstractions/interfaces';
 import { ExceptionTypeEnum } from 'abstractions/enums';
-import { HttpStatus } from '@nestjs/common';
 
 export const formatHttpException = ({
   code,
@@ -16,7 +17,11 @@ export const formatHttpException = ({
   };
 
   if (!type && code) {
-    if (code === HttpStatus.CONFLICT) {
+    if (isString(code)) {
+      exception.code = HttpStatus.INTERNAL_SERVER_ERROR;
+      exception.type = ExceptionTypeEnum.DatabaseError;
+      exception.metadata = { code };
+    } else if (code === HttpStatus.CONFLICT) {
       exception.type = ExceptionTypeEnum.Conflict;
     } else if (code === HttpStatus.BAD_REQUEST) {
       exception.type = ExceptionTypeEnum.BadRequest;

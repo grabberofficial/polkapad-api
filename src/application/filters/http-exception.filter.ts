@@ -5,6 +5,7 @@ import {
   HttpException
 } from '@nestjs/common';
 import { Response } from 'express';
+import { isFunction } from 'lodash';
 import { formatHttpException } from 'utils/exceptions';
 import BaseException from 'exceptions/base.exception';
 
@@ -15,7 +16,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
 
     const resultException = formatHttpException({
-      code: exception?.getStatus() || 500,
+      code: isFunction(exception?.getStatus) ? exception.getStatus() : 500,
       ...(exception as BaseException)
     });
 

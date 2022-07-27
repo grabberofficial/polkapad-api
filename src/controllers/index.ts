@@ -4,3 +4,4 @@ export * from './users.controller';
 export * from './wallets.controller';
 export * from './kyc.controller';
 export * from './magic-links.controller';
+export * from './analytics.controller';

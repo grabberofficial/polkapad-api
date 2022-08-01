@@ -1,12 +1,10 @@
 import { toLower } from 'lodash';
-
 import { Injectable } from '@nestjs/common';
-
-import { Prisma, User } from '@prisma/client';
-
+import { Prisma, User, Wallet } from '@prisma/client';
 import { genSalt, hash, compare } from 'bcryptjs';
-
 import { PrismaRepository } from 'repositories';
+
+export type UserWithWallets = (User & { wallets: Wallet[] });
 
 @Injectable()
 export class UsersService {
@@ -81,6 +79,34 @@ export class UsersService {
     return this.usersRepository.findUnique({
       where: {
         id: userId
+      }
+    });
+  }
+
+  public getUserWithWalletsById(userId: string): Promise<UserWithWallets | null> {
+    return this.usersRepository.findUnique({
+      where: {
+        id: userId
+      },
+      include: {
+        wallets: true
+      }
+    });
+  }
+
+  public async getRegisteredOnSaleUsers(saleId: string): Promise<UserWithWallets[]> {
+    return await this.usersRepository.findMany({
+      where: {
+        sales: {
+          some: {
+            sale: {
+              id: saleId
+            }
+          }
+        }
+      },
+      include: {
+        wallets: true
       }
     });
   }

@@ -9,19 +9,20 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  email         String          @unique
-  name          String?
-  password      String?
-  promocode     String?
-  kycId         String?         @unique
-  kycStatus     KycStatusTypes  @default(NOT_VERIFIED)
-  kycCallbacks  KycCallback[]
-  kycResults    KycResult[]
-  magicCodes    MagicCode[]
-  wallets       Wallet[]
-  updatedAt     DateTime        @updatedAt
-  createdAt     DateTime        @default(now())
+  id                    String          @id @default(cuid())
+  email                 String          @unique
+  name                  String?
+  password              String?
+  promocode             String?
+  kycId                 String?         @unique
+  kycStatus             KycStatusTypes  @default(NOT_VERIFIED)
+  kycCallbacks          KycCallback[]
+  kycResults            KycResult[]
+  magicCodes            MagicCode[]
+  wallets               Wallet[]
+  sales                 UsersOnSales[]
+  updatedAt             DateTime        @updatedAt
+  createdAt             DateTime        @default(now())
 }
 
 model Wallet {
@@ -64,6 +65,22 @@ model KycResult {
   country       String?
   dateOfBirth   String?
   createdAt     DateTime  @default(now())
+}
+
+model UsersOnSales {
+  user                  User              @relation(fields: [userId], references: [id])
+  userId                String
+  sale                  Sale              @relation(fields: [saleId], references: [id])
+  saleId                String
+
+  @@id([userId, saleId])
+}
+
+model Sale {
+  id                  String    @id @default(cuid())
+  title               String
+  users               UsersOnSales[]
+  createdAt           DateTime  @default(now())
 }
 
 enum MagicCodeTypes {

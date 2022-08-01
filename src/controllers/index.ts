@@ -6,3 +6,4 @@ export * from './kyc.controller';
 export * from './magic-links.controller';
 export * from './sales.controller';
 export * from './balances.controller';
+export * from './analytics.controller';

@@ -5,7 +5,9 @@ import { BalancesService, UserWithBalances } from 'services';
 @Controller('balances')
 @ApiTags('balances')
 export class BalancesController {
-  constructor(private readonly balanceService: BalancesService) {}
+  constructor(
+    private readonly balanceService: BalancesService,
+  ) {}
 
   @Get('sale/:saleId')
   @ApiOkResponse()

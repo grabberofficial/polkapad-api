@@ -20,6 +20,10 @@ export class KycBlockedException extends BaseException {
 
 export class KycNotAcceptedException extends BaseException {
   constructor() {
-    super(HttpStatus.BAD_REQUEST, ExceptionTypeEnum.KycNotAccepted, 'Kyc not accepted');
+    super(
+      HttpStatus.BAD_REQUEST,
+      ExceptionTypeEnum.KycNotAccepted,
+      'Kyc not accepted'
+    );
   }
 }

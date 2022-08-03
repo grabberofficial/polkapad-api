@@ -4,7 +4,10 @@ import { ExceptionTypeEnum } from 'abstractions/enums';
 
 export class WalletsNotAttachedException extends BaseException {
   constructor() {
-    super(HttpStatus.BAD_REQUEST, ExceptionTypeEnum.WalletsNotAttached, 'WalletsNotAttached');
+    super(
+      HttpStatus.BAD_REQUEST,
+      ExceptionTypeEnum.WalletsNotAttached,
+      'WalletsNotAttached'
+    );
   }
 }
-

@@ -4,7 +4,7 @@ import { Prisma, User, Wallet } from '@prisma/client';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { PrismaRepository } from 'repositories';
 
-export type UserWithWallets = (User & { wallets: Wallet[] });
+export type UserWithWallets = User & { wallets: Wallet[] };
 
 @Injectable()
 export class UsersService {
@@ -83,7 +83,9 @@ export class UsersService {
     });
   }
 
-  public getUserWithWalletsById(userId: string): Promise<UserWithWallets | null> {
+  public getUserWithWalletsById(
+    userId: string
+  ): Promise<UserWithWallets | null> {
     return this.usersRepository.findUnique({
       where: {
         id: userId
@@ -94,7 +96,9 @@ export class UsersService {
     });
   }
 
-  public async getRegisteredOnSaleUsers(saleId: string): Promise<UserWithWallets[]> {
+  public async getRegisteredOnSaleUsers(
+    saleId: string
+  ): Promise<UserWithWallets[]> {
     return await this.usersRepository.findMany({
       where: {
         sales: {

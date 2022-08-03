@@ -7,7 +7,6 @@ import { polkadotProvider } from 'config/system';
 
 @Injectable()
 export class PolkadotTokenService {
-
   private readonly provider: WsProvider;
 
   constructor() {
@@ -17,10 +16,14 @@ export class PolkadotTokenService {
   public async balanceOf(address: string): Promise<number> {
     const api = await ApiPromise.create({ provider: this.provider });
 
-    const { data: { free: balance } } = await api.query.system.account(address);
+    const {
+      data: { free: balance }
+    } = await api.query.system.account(address);
 
     const decimals = api.registry.chainDecimals[0];
 
-    return parseFloat(formatBalance(balance, { withSiFull: true, withUnit: false, decimals }));
+    return parseFloat(
+      formatBalance(balance, { withSiFull: true, withUnit: false, decimals })
+    );
   }
 }

@@ -7,23 +7,28 @@ import {
   BnbTokenService,
   PolkadotTokenService
 } from 'services';
-import { WalletName } from 'models';
+import { WalletName } from 'abstractions/enums';
 
-export type UserWithBalances = UserWithWallets & { ethBalance: number, polkaBalance: number };
+export type UserWithBalances = UserWithWallets & {
+  ethBalance: number;
+  polkaBalance: number;
+};
 
 @Injectable()
 export class BalancesService {
-
   constructor(
     private readonly bnbTokenService: BnbTokenService,
     private readonly polkadotService: PolkadotTokenService,
     private readonly userService: UsersService
-  ) {
-  }
+  ) {}
 
   public async getBy(user: UserWithWallets): Promise<UserWithBalances> {
-    const ethWallet = user.wallets.find(wallet => wallet.name === WalletName.ETH);
-    const polkaWallet = user.wallets.find(wallet => wallet.name === WalletName.POLKA);
+    const ethWallet = user.wallets.find(
+      (wallet) => wallet.name === WalletName.ETH
+    );
+    const polkaWallet = user.wallets.find(
+      (wallet) => wallet.name === WalletName.POLKA
+    );
 
     return {
       ...user,
@@ -32,9 +37,11 @@ export class BalancesService {
     };
   }
 
-  public async getRegisteredOnSaleBalances(saleId: string): Promise<UserWithBalances[]> {
+  public async getRegisteredOnSaleBalances(
+    saleId: string
+  ): Promise<UserWithBalances[]> {
     const users = await this.userService.getRegisteredOnSaleUsers(saleId);
 
-    return await Promise.all(users.map(async user => await this.getBy(user)));
+    return await Promise.all(users.map(async (user) => await this.getBy(user)));
   }
 }

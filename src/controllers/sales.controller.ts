@@ -1,7 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { KycStatusTypes, Sale } from '@prisma/client';
-import { BalancesService, SalesService, SaleWithUsers, UsersService } from 'services';
+import {
+  BalancesService,
+  SalesService,
+  SaleWithUsers,
+  UsersService
+} from 'services';
 import { CreateSaleDto, RegisterOnSaleDto } from 'dto/sales';
 import { UserContext } from 'decorators';
 import { IUserContext } from 'abstractions/interfaces';
@@ -10,12 +15,11 @@ import {
   WalletsNotAttachedException,
   ZeroBalanceException
 } from 'exceptions';
-import { WalletName } from 'models';
+import { WalletName } from 'abstractions/enums';
 
 @Controller('sales')
 @ApiTags('sales')
 export class SalesController {
-
   constructor(
     private readonly salesService: SalesService,
     private readonly usersService: UsersService,
@@ -37,14 +41,16 @@ export class SalesController {
     @Body() { saleId }: RegisterOnSaleDto
   ): Promise<SaleWithUsers> {
     const user = await this.usersService.getUserWithWalletsById(userContext.id);
-    if (user.wallets.length < [WalletName.ETH, WalletName.POLKA].length) throw new WalletsNotAttachedException();
+    if (user.wallets.length < [WalletName.ETH, WalletName.POLKA].length)
+      throw new WalletsNotAttachedException();
 
     const balances = await this.balancesService.getBy(user);
-    if (balances.ethBalance == 0 && balances.polkaBalance == 0) throw new ZeroBalanceException();
+    if (balances.ethBalance == 0 && balances.polkaBalance == 0)
+      throw new ZeroBalanceException();
 
-    if (user.kycStatus !== KycStatusTypes.ACCEPTED) throw new KycNotAcceptedException();
+    if (user.kycStatus !== KycStatusTypes.ACCEPTED)
+      throw new KycNotAcceptedException();
 
     return await this.salesService.registerUserOnSale(userContext.id, saleId);
   }
 }
-

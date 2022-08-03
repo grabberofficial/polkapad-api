@@ -4,7 +4,10 @@ import { ExceptionTypeEnum } from 'abstractions/enums';
 
 export class ZeroBalanceException extends BaseException {
   constructor() {
-    super(HttpStatus.BAD_REQUEST, ExceptionTypeEnum.ZeroBalance, 'ZeroBalanceException');
+    super(
+      HttpStatus.BAD_REQUEST,
+      ExceptionTypeEnum.ZeroBalance,
+      'ZeroBalanceException'
+    );
   }
 }
-

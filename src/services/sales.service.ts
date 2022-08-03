@@ -6,12 +6,9 @@ export type SaleWithUsers = Sale & { users: UsersOnSales[] };
 
 @Injectable()
 export class SalesService {
-
   private readonly salesRepository: Prisma.SaleDelegate<Prisma.RejectOnNotFound>;
 
-  constructor(
-    private readonly prismaRepository: PrismaRepository
-  ) {
+  constructor(private readonly prismaRepository: PrismaRepository) {
     this.salesRepository = prismaRepository.sale;
   }
 
@@ -31,10 +28,13 @@ export class SalesService {
     });
   }
 
-  public async registerUserOnSale(userId: string, saleId: string): Promise<SaleWithUsers> {
+  public async registerUserOnSale(
+    userId: string,
+    saleId: string
+  ): Promise<SaleWithUsers> {
     return await this.salesRepository.update({
       where: {
-        id: saleId,
+        id: saleId
       },
       data: {
         users: {

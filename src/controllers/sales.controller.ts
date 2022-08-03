@@ -10,12 +10,11 @@ import {
   WalletsNotAttachedException,
   ZeroBalanceException
 } from 'exceptions';
-import { WalletName } from 'models';
+import { WalletName } from 'abstractions/enums';
 
 @Controller('sales')
 @ApiTags('sales')
 export class SalesController {
-
   constructor(
     private readonly salesService: SalesService,
     private readonly usersService: UsersService,

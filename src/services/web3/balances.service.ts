@@ -7,7 +7,7 @@ import {
   BnbTokenService,
   PolkadotTokenService
 } from 'services';
-import { WalletName } from 'models';
+import { WalletName } from 'abstractions/enums';
 
 export type UserWithBalances = UserWithWallets & { ethBalance: number, polkaBalance: number };
 
@@ -18,8 +18,7 @@ export class BalancesService {
     private readonly bnbTokenService: BnbTokenService,
     private readonly polkadotService: PolkadotTokenService,
     private readonly userService: UsersService
-  ) {
-  }
+  ) {}
 
   public async getBy(user: UserWithWallets): Promise<UserWithBalances> {
     const ethWallet = user.wallets.find(wallet => wallet.name === WalletName.ETH);

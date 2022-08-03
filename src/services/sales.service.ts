@@ -6,7 +6,6 @@ export type SaleWithUsers = Sale & { users: UsersOnSales[] };
 
 @Injectable()
 export class SalesService {
-
   private readonly salesRepository: Prisma.SaleDelegate<Prisma.RejectOnNotFound>;
 
   constructor(

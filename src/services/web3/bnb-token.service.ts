@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { formatEther } from 'ethers/lib/utils';
 import { polkadotBnbContract } from 'config/system';
 
-import Polkadot from 'constants/abi/Polkadot.json';
+import Polkadot from 'config/abi/Polkadot.json';
 import { BnbContractService } from './bnb-contract.service';
 
 @Injectable()

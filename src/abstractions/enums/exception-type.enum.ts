@@ -11,7 +11,10 @@ export enum ExceptionTypeEnum {
   WalletAlreadyUsed = 'WalletAlreadyUsed',
   KycAlreadyAccepted = 'KycAlreadyAccepted',
   KycBlocked = 'KycBlocked',
+  KycNotAccepted = 'KycNotAccepted',
   NotFound = 'NotFound',
   BadRequest = 'BadRequest',
-  Conflict = 'Conflict'
+  Conflict = 'Conflict',
+  WalletsNotAttached = 'WalletsNotAttached',
+  ZeroBalance = 'ZeroBalance'
 }

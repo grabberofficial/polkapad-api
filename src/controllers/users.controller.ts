@@ -1,5 +1,6 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { IUserContext } from 'abstractions/interfaces';
 
 import { UsersService, WalletsService } from 'services';
@@ -34,5 +35,11 @@ export class UsersController {
       kycStatus: user.kycStatus,
       wallets
     } as UserContextModel;
+  }
+
+  @Get('sale/:saleId')
+  @ApiOkResponse()
+  async getRegisteredUsers(@Param('saleId') saleId: string): Promise<User[]> {
+    return await this.usersService.getRegisteredOnSaleUsers(saleId);
   }
 }

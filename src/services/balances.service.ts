@@ -22,7 +22,7 @@ export class BalancesService {
     private readonly userService: UsersService
   ) {}
 
-  public async getBy(user: UserWithWallets): Promise<UserWithBalances> {
+  public async getByUser(user: UserWithWallets): Promise<UserWithBalances> {
     const ethWallet = user.wallets.find(
       (wallet) => wallet.name === WalletName.ETH
     );
@@ -42,6 +42,6 @@ export class BalancesService {
   ): Promise<UserWithBalances[]> {
     const users = await this.userService.getRegisteredOnSaleUsers(saleId);
 
-    return await Promise.all(users.map(async (user) => await this.getBy(user)));
+    return Promise.all(users.map(async (user) => this.getByUser(user)));
   }
 }

@@ -1,16 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util';
 
-import { polkadotProvider } from 'config/system';
+import { polkadotProvider } from 'config/polkadot';
 
 @Injectable()
-export class PolkadotTokenService {
-  private readonly provider: WsProvider;
+export class PolkadotTokenService implements OnModuleInit {
+  private provider: WsProvider;
 
-  constructor() {
+  async onModuleInit() {
     this.provider = new WsProvider(polkadotProvider);
+
+    if (!this.provider.isConnected) {
+      await this.provider.disconnect();
+    }
   }
 
   public async balanceOf(address: string): Promise<number> {

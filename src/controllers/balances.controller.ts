@@ -5,13 +5,13 @@ import { BalancesService, UserWithBalances } from 'services';
 @Controller('balances')
 @ApiTags('balances')
 export class BalancesController {
-  constructor(
-    private readonly balanceService: BalancesService,
-  ) {}
+  constructor(private readonly balanceService: BalancesService) {}
 
   @Get('sale/:saleId')
   @ApiOkResponse()
-  async get(@Param('saleId') saleId: string): Promise<UserWithBalances[]> {
-    return await this.balanceService.getRegisteredOnSaleBalances(saleId);
+  getRegisteredOnSaleBalances(
+    @Param('saleId') saleId: string
+  ): Promise<UserWithBalances[]> {
+    return this.balanceService.getRegisteredOnSaleBalances(saleId);
   }
 }

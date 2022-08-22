@@ -1,11 +1,12 @@
 import { ethers } from 'ethers';
-import { binanceProvider } from 'config/system';
+import { binanceProvider } from 'config/binance';
 
 export class BnbContractService {
-  protected readonly provider: ethers.providers.JsonRpcProvider;
-  protected readonly contract: ethers.Contract;
+  protected provider: ethers.providers.JsonRpcProvider;
 
-  constructor(address: string, abi: any) {
+  protected contract: ethers.Contract;
+
+  protected connect(address: string, abi: any) {
     this.provider = new ethers.providers.JsonRpcProvider(binanceProvider);
     this.contract = new ethers.Contract(address, abi, this.provider);
   }

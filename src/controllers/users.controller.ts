@@ -39,7 +39,7 @@ export class UsersController {
 
   @Get('sale/:saleId')
   @ApiOkResponse()
-  async getRegisteredUsers(@Param('saleId') saleId: string): Promise<User[]> {
-    return await this.usersService.getRegisteredOnSaleUsers(saleId);
+  getRegisteredUsers(@Param('saleId') saleId: string): Promise<User[]> {
+    return this.usersService.getRegisteredOnSaleUsers(saleId);
   }
 }

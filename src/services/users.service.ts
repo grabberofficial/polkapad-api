@@ -99,7 +99,7 @@ export class UsersService {
   public async getRegisteredOnSaleUsers(
     saleId: string
   ): Promise<UserWithWallets[]> {
-    return await this.usersRepository.findMany({
+    return this.usersRepository.findMany({
       where: {
         sales: {
           some: {

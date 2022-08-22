@@ -29,8 +29,8 @@ export class SalesController {
   @Post('create')
   @ApiBearerAuth()
   @ApiCreatedResponse()
-  async create(@Body() { title }: CreateSaleDto): Promise<Sale> {
-    return await this.salesService.create({ title });
+  createSale(@Body() { title }: CreateSaleDto): Promise<Sale> {
+    return this.salesService.create({ title });
   }
 
   @Post('register')
@@ -44,13 +44,13 @@ export class SalesController {
     if (user.wallets.length < [WalletName.ETH, WalletName.POLKA].length)
       throw new WalletsNotAttachedException();
 
-    const balances = await this.balancesService.getBy(user);
+    const balances = await this.balancesService.getByUser(user);
     if (balances.ethBalance == 0 && balances.polkaBalance == 0)
       throw new ZeroBalanceException();
 
     if (user.kycStatus !== KycStatusTypes.ACCEPTED)
       throw new KycNotAcceptedException();
 
-    return await this.salesService.registerUserOnSale(userContext.id, saleId);
+    return this.salesService.registerUserOnSale(userContext.id, saleId);
   }
 }

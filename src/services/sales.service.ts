@@ -32,7 +32,7 @@ export class SalesService {
     userId: string,
     saleId: string
   ): Promise<SaleWithUsers> {
-    return await this.salesRepository.update({
+    return this.salesRepository.update({
       where: {
         id: saleId
       },

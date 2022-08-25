@@ -20,6 +20,7 @@ model User {
   kycResults            KycResult[]
   gleamCallbacks        GleamCallback[]
   magicCodes            MagicCode[]
+  rewards               Reward[]
   wallets               Wallet[]
   sales                 UsersOnSales[]
   updatedAt             DateTime        @updatedAt
@@ -98,6 +99,33 @@ model Sale {
   title               String
   users               UsersOnSales[]
   createdAt           DateTime  @default(now())
+}
+
+model Reward {
+  id            String     @id @default(cuid())
+  user          User       @relation(fields: [userId], references: [id])
+  userId        String
+  source        RewardSourceTypes
+  action        RewardActionTypes
+  prize         Int
+  createdAt     DateTime   @default(now())
+}
+
+enum RewardSourceTypes {
+  INNER
+  GLEAM
+  KYC
+}
+
+enum RewardActionTypes {
+  REGISTRATION
+  BINANCE_WALLET
+  POLKADOT_WALLET
+  KYC_ACCEPTED
+  SURVEY_COMPLETED
+  TWITTER_FOLLOW
+  TELEGRAM_FOLLOW
+  BLOG_FOLLOW
 }
 
 enum MagicCodeTypes {

@@ -1,13 +1,15 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger';
+import { RewardActionTypes, RewardSourceTypes } from '@prisma/client';
 import { GleamCallbackDto } from 'dto/gleam/gleam-callback.dto';
-import { GleamService, UsersService } from 'services';
+import { GleamService, RewardsService, UsersService } from 'services';
 
 @Controller('gleam')
 @ApiTags('gleam')
 export class GleamController {
   constructor(
     private readonly gleamService: GleamService,
+    private readonly rewardsService: RewardsService,
     private readonly usersService: UsersService
   ) {}
 
@@ -41,6 +43,14 @@ export class GleamController {
           socialProvider: socialLink.provider,
           socialReference: socialLink.reference
         });
+
+        if (user) {
+          await this.rewardsService.createReward({
+            userId: user.id,
+            source: RewardSourceTypes.GLEAM,
+            action: RewardActionTypes.TWITTER_FOLLOW
+          });
+        }
       }
     } catch {}
   }

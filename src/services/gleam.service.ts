@@ -13,10 +13,10 @@ export class GleamService {
   }
 
   public async saveCallback(
-    gleamCallback: Prisma.GleamCallbackUncheckedCreateInput
+    info: Prisma.GleamCallbackUncheckedCreateInput
   ): Promise<void> {
     await this.gleamCallbacksRepository.create({
-      data: gleamCallback
+      data: info
     });
   }
 

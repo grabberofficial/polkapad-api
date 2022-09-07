@@ -23,4 +23,12 @@ export class RewardsService {
 
     return this.rewardsRepository.create({ data: newReward });
   }
+
+  public getRewardsByUserId(userId: string): Promise<Reward[]> {
+    return this.rewardsRepository.findMany({
+      where: {
+        userId
+      }
+    });
+  }
 }

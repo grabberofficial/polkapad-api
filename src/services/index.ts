@@ -8,7 +8,7 @@ export * from './gleam.service';
 export * from './wallets.service';
 export * from './rewards.service';
 export * from './magic-codes.service';
-export * from './mail.service';
+export * from './postmark.service';
 export * from './analytics.service';
 export * from './analytics.service';
 export * from './sales.service';

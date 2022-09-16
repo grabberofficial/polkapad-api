@@ -1,14 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
-import { KycStatusTypes, Sale } from '@prisma/client';
+import { KycStatusTypes, UserRoleTypes, Sale } from '@prisma/client';
 import {
   BalancesService,
   SalesService,
   SaleWithUsers,
   UsersService
 } from 'services';
-import { CreateSaleDto, RegisterOnSaleDto } from 'dto/sales';
-import { UserContext } from 'decorators';
+import { CreateSaleDto, UpdateSaleDto, RegisterOnSaleDto } from 'dto/sales';
+import { AvailableForRole, UserContext } from 'decorators';
 import { IUserContext } from 'abstractions/interfaces';
 import {
   KycNotAcceptedException,
@@ -28,9 +28,21 @@ export class SalesController {
 
   @Post('create')
   @ApiBearerAuth()
+  @AvailableForRole(UserRoleTypes.ADMIN)
   @ApiCreatedResponse()
   createSale(@Body() { title }: CreateSaleDto): Promise<Sale> {
     return this.salesService.create({ title });
+  }
+
+  @Post('update/:id')
+  @ApiBearerAuth()
+  @AvailableForRole(UserRoleTypes.ADMIN)
+  @ApiCreatedResponse()
+  updateSale(
+    @Param('id') id: string,
+    @Body() { title }: UpdateSaleDto
+  ): Promise<Sale> {
+    return this.salesService.updateById(id, { title });
   }
 
   @Post('register')

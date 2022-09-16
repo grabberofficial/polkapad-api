@@ -20,6 +20,18 @@ export class SalesService {
     });
   }
 
+  public async updateById(
+    id: string,
+    info: Prisma.SaleUncheckedCreateInput
+  ): Promise<Sale> {
+    return this.salesRepository.update({
+      where: {
+        id
+      },
+      data: info
+    });
+  }
+
   public async get(saleId: string): Promise<Sale> {
     return this.salesRepository.findUnique({
       where: {

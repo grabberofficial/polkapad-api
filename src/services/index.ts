@@ -6,6 +6,7 @@ export * from './users.service';
 export * from './kyc.service';
 export * from './gleam.service';
 export * from './wallets.service';
+export * from './wallet-logs.service';
 export * from './rewards.service';
 export * from './magic-codes.service';
 export * from './mail.service';

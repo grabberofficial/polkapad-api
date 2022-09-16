@@ -22,18 +22,29 @@ model User {
   magicCodes            MagicCode[]
   rewards               Reward[]
   wallets               Wallet[]
+  walletLogs            WalletLog[]
   sales                 UsersOnSales[]
   updatedAt             DateTime        @updatedAt
   createdAt             DateTime        @default(now())
 }
 
 model Wallet {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  name      String
-  value     String    @unique
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
+  id            String    @id @default(cuid())
+  name          String
+  value         String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  createdAt     DateTime  @default(now())
+}
+
+model WalletLog {
+  id            String    @id @default(cuid())
+  name          String
+  network       String
+  address       String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  connectAt     DateTime  @default(now())
 }
 
 model MagicCode {
@@ -47,12 +58,12 @@ model MagicCode {
 }
 
 model KycCallback {
-  id        String    @id @default(cuid())
-  kycId     String
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
-  event     String
-  createdAt DateTime  @default(now())
+  id            String    @id @default(cuid())
+  kycId         String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  event         String
+  createdAt     DateTime  @default(now())
 }
 
 model KycResult {

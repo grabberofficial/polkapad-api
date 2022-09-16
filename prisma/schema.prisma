@@ -11,6 +11,7 @@ datasource db {
 model User {
   id                    String          @id @default(cuid())
   email                 String          @unique
+  role                  UserRoleTypes   @default(USER)
   name                  String?
   password              String?
   promocode             String?
@@ -163,6 +164,12 @@ model Reward {
   action        RewardActionTypes
   prize         Int
   createdAt     DateTime   @default(now())
+}
+
+enum UserRoleTypes {
+  ADMIN
+  OWNER
+  USER
 }
 
 enum RewardSourceTypes {

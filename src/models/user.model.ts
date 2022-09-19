@@ -1,9 +1,12 @@
-import { KycStatusTypes, User } from '@prisma/client';
+import { KycStatusTypes, UserRoleTypes, User } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserModel implements User {
   @ApiProperty()
   id: string;
+
+  @ApiProperty({ enum: UserRoleTypes })
+  role: UserRoleTypes;
 
   @ApiProperty()
   createdAt: Date;

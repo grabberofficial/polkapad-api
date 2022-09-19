@@ -1,4 +1,5 @@
 import { isEmpty, includes } from 'lodash';
+import { UserRoleTypes } from '@prisma/client';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AccessDeniedException } from 'exceptions';
@@ -14,7 +15,7 @@ export class ACLGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const contextHandler = context.getHandler();
 
-    const roles: UserRoleEnum[] = this.reflector.get(
+    const roles: UserRoleTypes[] = this.reflector.get(
       'availableForRole',
       contextHandler
     );

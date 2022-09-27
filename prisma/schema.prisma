@@ -11,6 +11,7 @@ datasource db {
 model User {
   id                    String          @id @default(cuid())
   email                 String          @unique
+  role                  UserRoleTypes   @default(USER)
   name                  String?
   password              String?
   promocode             String?
@@ -21,18 +22,29 @@ model User {
   gleamCallbacks        GleamCallback[]
   rewards               Reward[]
   wallets               Wallet[]
+  walletLogs            WalletLog[]
   sales                 UsersOnSales[]
   updatedAt             DateTime        @updatedAt
   createdAt             DateTime        @default(now())
 }
 
 model Wallet {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  name      String
-  value     String    @unique
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
+  id            String    @id @default(cuid())
+  name          String
+  value         String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  createdAt     DateTime  @default(now())
+}
+
+model WalletLog {
+  id            String    @id @default(cuid())
+  name          String
+  network       String
+  address       String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  connectAt     DateTime  @default(now())
 }
 
 model MagicCode {
@@ -45,12 +57,12 @@ model MagicCode {
 }
 
 model KycCallback {
-  id        String    @id @default(cuid())
-  kycId     String
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String
-  event     String
-  createdAt DateTime  @default(now())
+  id            String    @id @default(cuid())
+  kycId         String
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  event         String
+  createdAt     DateTime  @default(now())
 }
 
 model KycResult {
@@ -150,6 +162,12 @@ model Reward {
   action        RewardActionTypes
   prize         Int
   createdAt     DateTime   @default(now())
+}
+
+enum UserRoleTypes {
+  ADMIN
+  OWNER
+  USER
 }
 
 enum RewardSourceTypes {

@@ -28,7 +28,7 @@ export class WalletsController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: [WalletModel] })
   getWallets(@UserContext() userContext: IUserContext) {
-    return this.walletsService.getWalletsByUserById(userContext.id);
+    return this.walletsService.getWalletsByUserId(userContext.id);
   }
 
   @Post()

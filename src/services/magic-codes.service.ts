@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MagicCode, MagicCodeTypes, Prisma } from '@prisma/client';
+import { MagicCode, Prisma } from '@prisma/client';
 import dayjs from 'dayjs';
 import { genSalt, hash, compare } from 'bcryptjs';
 
@@ -33,7 +33,7 @@ export class MagicCodesService {
   }
 
   public async createMagicCode(
-    info: Pick<Prisma.MagicCodeUncheckedCreateInput, 'userId' | 'type'>
+    info: Pick<Prisma.MagicCodeUncheckedCreateInput, 'email' | 'type'>
   ): Promise<string> {
     const code = this.generateCode();
     const hashedCode = await this.encryptCode(code);
@@ -49,14 +49,10 @@ export class MagicCodesService {
     return code;
   }
 
-  public getLatestCodeByUserId(
-    userId: string,
-    type: MagicCodeTypes
-  ): Promise<MagicCode> {
+  public getLastCodeByEmail(email: string): Promise<MagicCode> {
     return this.magicCodeRepository.findFirst({
       where: {
-        userId,
-        type
+        email
       },
       orderBy: {
         createdAt: 'desc'
@@ -64,10 +60,10 @@ export class MagicCodesService {
     });
   }
 
-  public async deleteCodesByUserId(userId: string): Promise<void> {
+  public async deleteCodesByEmail(email: string): Promise<void> {
     await this.magicCodeRepository.deleteMany({
       where: {
-        userId
+        email
       }
     });
   }

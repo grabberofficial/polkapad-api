@@ -42,7 +42,7 @@ export class WalletsService {
     });
   }
 
-  public getWalletsByUserById(userId: string): Promise<Wallet[]> {
+  public getWalletsByUserId(userId: string): Promise<Wallet[]> {
     return this.walletsRepository.findMany({
       where: {
         userId

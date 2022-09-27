@@ -7,16 +7,15 @@ import {
   UsersService,
   MagicCodesService,
   JwtService,
-  MailService
+  PostmarkService
 } from 'services';
-
+import { MagicCodeModel } from 'models';
 import {
-  LoginDto,
-  LoginCodeDto,
   SendCodeDto,
-  RestorePasswordDto
+  VerifyCodeDto,
+  AuthorizeDto,
+  RegisterDto
 } from 'dto/auth';
-import { CreateUserDto, CreateUserByCodeDto } from 'dto/users';
 import {
   EmailAlreadyUsedException,
   IncorrectEmailOrCodeException,
@@ -31,37 +30,44 @@ export class AuthController {
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly magicCodesService: MagicCodesService,
-    private readonly mailService: MailService
+    private readonly postmarkService: PostmarkService
   ) {}
 
-  @Post('code/send')
-  @ApiOkResponse()
-  async sendCode(@Body() { email }: SendCodeDto) {
+  @Post('/send-code')
+  @ApiOkResponse({ type: MagicCodeModel })
+  async sendCode(@Body() { email }: SendCodeDto): Promise<MagicCodeModel> {
     const user = await this.usersService.getUserByEmail(email);
 
-    if (!user) throw new NotFoundException('UserByEmail', email);
+    if (!user) {
+      const code = await this.magicCodesService.createMagicCode({
+        email,
+        type: MagicCodeTypes.SIGN_UP
+      });
 
-    const code = await this.magicCodesService.createMagicCode({
-      userId: user.id,
-      type: MagicCodeTypes.SIGNIN
-    });
+      await this.postmarkService.sendMagicCode(email, code);
 
-    await this.mailService.sendMagicLinkToUser(user, code);
+      return {
+        email,
+        type: MagicCodeTypes.SIGN_UP
+      };
+    }
+
+    return {
+      email,
+      type: MagicCodeTypes.SIGN_IN
+    };
   }
 
-  @Post('code/login')
-  @ApiOkResponse({ type: String })
-  async loginByCode(@Body() { email, code }: LoginCodeDto) {
-    const user = await this.usersService.getUserByEmail(email);
-
-    if (!user) throw new IncorrectEmailOrCodeException();
-
-    const magicCode = await this.magicCodesService.getLatestCodeByUserId(
-      user.id,
-      MagicCodeTypes.SIGNIN
+  @Post('/verify-code')
+  @ApiOkResponse({ type: MagicCodeModel })
+  async verifyCode(
+    @Body() { email, code }: VerifyCodeDto
+  ): Promise<MagicCodeModel> {
+    const lastMagicCode = await this.magicCodesService.getLastCodeByEmail(
+      email
     );
 
-    if (!magicCode)
+    if (!lastMagicCode)
       throw new NotFoundException(
         'MagicCodeByUserEmail',
         email,
@@ -70,67 +76,25 @@ export class AuthController {
 
     const isValidCode = await this.magicCodesService.compareCode(
       code,
-      magicCode.hashedCode,
-      magicCode.expiresAt
+      lastMagicCode.hashedCode,
+      lastMagicCode.expiresAt
     );
 
     if (!isValidCode) throw new IncorrectEmailOrCodeException();
 
-    await this.magicCodesService.deleteCodesByUserId(user.id);
+    if (lastMagicCode.type === MagicCodeTypes.SIGN_IN) {
+      await this.magicCodesService.deleteCodesByEmail(email);
+    }
 
-    const userContext: IUserContext = {
-      id: user.id
-    };
-
-    return this.jwtService.signAsync(userContext);
-  }
-
-  @Post('code/register')
-  @ApiCreatedResponse({ type: String })
-  async registerByCode(@Body() { email }: CreateUserByCodeDto) {
-    const existUser = await this.usersService.getUserByEmail(email);
-
-    if (existUser) throw new EmailAlreadyUsedException();
-
-    const user = await this.usersService.createUser({ email });
-    const code = await this.magicCodesService.createMagicCode({
-      userId: user.id,
-      type: MagicCodeTypes.SIGNIN
-    });
-
-    await this.mailService.sendMagicLinkToUser(user, code);
-
-    const userContext: IUserContext = {
-      id: user.id
-    };
-
-    return this.jwtService.signAsync(userContext);
-  }
-
-  @Post('password/register')
-  @ApiCreatedResponse({ type: String })
-  async register(@Body() { password, name, promocode, email }: CreateUserDto) {
-    const existUser = await this.usersService.getUserByEmail(email);
-
-    if (existUser) throw new EmailAlreadyUsedException();
-
-    const user = await this.usersService.createUser({
+    return {
       email,
-      password,
-      name,
-      promocode
-    });
-
-    const userContext: IUserContext = {
-      id: user.id
+      type: lastMagicCode.type
     };
-
-    return this.jwtService.signAsync(userContext);
   }
 
-  @Post('password/login')
+  @Post('/authorize')
   @ApiOkResponse({ type: String })
-  async login(@Body() { email, password }: LoginDto) {
+  async authorize(@Body() { email, password }: AuthorizeDto): Promise<string> {
     const user = await this.usersService.getUserByEmail(email);
 
     if (!user) throw new IncorrectEmailOrPasswordException();
@@ -149,55 +113,32 @@ export class AuthController {
     return this.jwtService.signAsync(userContext);
   }
 
-  @Post('password/reset')
-  @ApiOkResponse()
-  async resetPassword(@Body() { email }: SendCodeDto) {
-    const user = await this.usersService.getUserByEmail(email);
+  @Post('/register')
+  @ApiCreatedResponse({ type: String })
+  async register(
+    @Body() { code, password, name, promocode, email }: RegisterDto
+  ): Promise<string> {
+    const verifyResult = await this.verifyCode({ email, code });
 
-    if (!user) throw new NotFoundException('UserByEmail', email);
+    if (verifyResult.type !== MagicCodeTypes.SIGN_UP)
+      throw new IncorrectEmailOrCodeException();
 
-    const code = await this.magicCodesService.createMagicCode({
-      userId: user.id,
-      type: MagicCodeTypes.SIGNIN
+    const existUser = await this.usersService.getUserByEmail(email);
+
+    if (existUser) throw new EmailAlreadyUsedException();
+
+    const user = await this.usersService.createUser({
+      email,
+      password,
+      name,
+      promocode
     });
-
-    await this.mailService.sendResetPasswordToUser(user, code);
-  }
-
-  @Post('password/change')
-  @ApiOkResponse({ type: String })
-  async changePassword(@Body() { email, password, code }: RestorePasswordDto) {
-    const user = await this.usersService.getUserByEmail(email);
-
-    if (!user) throw new IncorrectEmailOrCodeException();
-
-    const magicCode = await this.magicCodesService.getLatestCodeByUserId(
-      user.id,
-      MagicCodeTypes.RESTORE_PASSWORD
-    );
-
-    if (!magicCode)
-      throw new NotFoundException(
-        'MagicCodeByUserEmail',
-        email,
-        `No code found for email: ${email}`
-      );
-
-    const isValidCode = await this.magicCodesService.compareCode(
-      code,
-      magicCode.hashedCode,
-      magicCode.expiresAt
-    );
-
-    if (!isValidCode) throw new IncorrectEmailOrCodeException();
-
-    await this.magicCodesService.deleteCodesByUserId(user.id);
-
-    await this.usersService.updateUserPasswordById(user.id, password);
 
     const userContext: IUserContext = {
       id: user.id
     };
+
+    await this.magicCodesService.deleteCodesByEmail(email);
 
     return this.jwtService.signAsync(userContext);
   }

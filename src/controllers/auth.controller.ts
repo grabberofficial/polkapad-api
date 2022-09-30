@@ -35,7 +35,9 @@ export class AuthController {
 
   @Post('/send-code')
   @ApiOkResponse({ type: MagicCodeModel })
-  async sendCode(@Body() { email }: SendCodeDto): Promise<MagicCodeModel> {
+  async sendCode(
+    @Body() { email, isAuthorize }: SendCodeDto
+  ): Promise<MagicCodeModel> {
     const user = await this.usersService.getUserByEmail(email);
 
     if (!user) {
@@ -50,6 +52,15 @@ export class AuthController {
         email,
         type: MagicCodeTypes.SIGN_UP
       };
+    }
+
+    if (isAuthorize) {
+      const code = await this.magicCodesService.createMagicCode({
+        email,
+        type: MagicCodeTypes.SIGN_IN
+      });
+
+      await this.postmarkService.sendMagicCode(email, code);
     }
 
     return {
@@ -84,11 +95,27 @@ export class AuthController {
 
     if (lastMagicCode.type === MagicCodeTypes.SIGN_IN) {
       await this.magicCodesService.deleteCodesByEmail(email);
+
+      const user = await this.usersService.getUserByEmail(email);
+
+      if (!user) throw new IncorrectEmailOrPasswordException();
+
+      const userContext: IUserContext = {
+        id: user.id
+      };
+
+      const token = await this.jwtService.signAsync(userContext);
+
+      return {
+        email,
+        token,
+        type: MagicCodeTypes.SIGN_IN
+      };
     }
 
     return {
       email,
-      type: lastMagicCode.type
+      type: MagicCodeTypes.SIGN_UP
     };
   }
 

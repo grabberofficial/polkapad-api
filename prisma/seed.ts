@@ -1,17 +1,30 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserRoleTypes } from '@prisma/client';
 import { genSalt, hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const USER = {
-  password: 'testtest',
-  email: 'test@email.com'
-};
+const USERS = [
+  {
+    password: 'testtest',
+    email: 'test@email.com'
+  },
+  {
+    password: 'adminadmin',
+    email: 'admin@email.com',
+    role: UserRoleTypes.ADMIN
+  }
+];
 
 async function main() {
+  const [user, admin] = USERS;
   const salt = await genSalt(12);
-  const hashedPassword = await hash(USER.password, salt);
-  await prisma.user.create({ data: { ...USER, password: hashedPassword } });
+
+  await prisma.user.create({
+    data: { ...user, password: await hash(user.password, salt) }
+  });
+  await prisma.user.create({
+    data: { ...admin, password: await hash(admin.password, salt) }
+  });
 }
 
 main()

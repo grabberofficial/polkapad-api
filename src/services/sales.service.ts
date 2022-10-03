@@ -12,15 +12,15 @@ export class SalesService {
     this.salesRepository = prismaRepository.sale;
   }
 
-  public async create(info: Prisma.SaleUncheckedCreateInput): Promise<Sale> {
+  public async createSale(
+    info: Prisma.SaleUncheckedCreateInput
+  ): Promise<Sale> {
     return this.salesRepository.create({
-      data: {
-        title: info.title
-      }
+      data: info
     });
   }
 
-  public async updateById(
+  public async updateSaleById(
     id: string,
     info: Prisma.SaleUncheckedCreateInput
   ): Promise<Sale> {
@@ -32,12 +32,36 @@ export class SalesService {
     });
   }
 
-  public async get(saleId: string): Promise<Sale> {
+  public async getSaleById(saleId: string): Promise<Sale> {
     return this.salesRepository.findUnique({
       where: {
         id: saleId
       }
     });
+  }
+
+  public async getSalesList(
+    search: string,
+    offset = 0,
+    count = 20
+  ): Promise<[Sale[], number]> {
+    const rules = {
+      where: {
+        title: {
+          contains: search
+        }
+      }
+    };
+
+    const total = await this.salesRepository.count(rules);
+
+    const data = await this.salesRepository.findMany({
+      skip: offset,
+      take: count,
+      ...rules
+    });
+
+    return [data, total];
   }
 
   public async registerUserOnSale(

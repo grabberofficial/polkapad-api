@@ -1,3 +1,2 @@
-export * from './create-sale.dto';
-export * from './update-sale.dto';
+export * from './create-or-update-sale.dto';
 export * from './register-on-sale.dto';

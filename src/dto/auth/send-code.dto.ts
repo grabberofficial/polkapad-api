@@ -1,14 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsBoolean, IsNotEmpty, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEmail, IsBoolean, IsNotEmpty } from 'class-validator';
 
 export class SendCodeDto {
+  @ApiProperty()
   @IsEmail()
   @IsNotEmpty()
-  @ApiProperty()
   email: string;
 
+  @ApiPropertyOptional()
   @IsBoolean()
-  @IsOptional()
-  @ApiProperty()
   isAuthorize?: boolean;
 }

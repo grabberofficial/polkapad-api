@@ -115,6 +115,7 @@ model Sale {
   info                SaleInfoForSale?
   tokenInfo           TokenInfoForSale?
   startAt             DateTime?
+  finishAt            DateTime?
   createdAt           DateTime  @default(now())
 }
 
@@ -124,7 +125,8 @@ model RoadmapForSale {
   saleId          String
   step            Int
   title           String
-  startAt         DateTime
+  startAt         DateTime?
+  finishAt        DateTime?
 }
 
 model TeamMemberForSale {
@@ -132,16 +134,16 @@ model TeamMemberForSale {
   sale            Sale      @relation(fields: [saleId], references: [id])
   saleId          String
   fullName        String
-  role            String
+  role            String?
 }
 
 model SaleInfoForSale {
   id              String    @id @default(cuid())
   sale            Sale      @relation(fields: [saleId], references: [id])
   saleId          String    @unique
-  tgeType         String
-  vesting         String
-  parachain       String
+  tgeType         String?
+  vesting         String?
+  parachain       String?
   address         String
 }
 

@@ -27,7 +27,8 @@ export class UsersController {
     return {
       id: user.id,
       name: user.name,
-      kycStatus: user.kycStatus
+      kycStatus: user.kycStatus,
+      role: user.role
     } as UserContextModel;
   }
 

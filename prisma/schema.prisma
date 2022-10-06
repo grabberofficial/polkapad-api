@@ -107,6 +107,7 @@ model UsersOnSales {
 model Sale {
   id                  String    @id @default(cuid())
   title               String
+  status              SaleStatusTypes  @default(CREATED)
   description         String?
   overview            String?
   users               UsersOnSales[]
@@ -170,6 +171,15 @@ enum UserRoleTypes {
   ADMIN
   OWNER
   USER
+}
+
+enum SaleStatusTypes {
+  CREATED
+  STARTED
+  REGISTRATION
+  PAUSE
+  SALE
+  FINISHED
 }
 
 enum RewardSourceTypes {

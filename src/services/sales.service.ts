@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Sale, UsersOnSales } from '@prisma/client';
+import { Prisma, Sale, UsersOnSales, SaleStatusTypes } from '@prisma/client';
 import { PrismaRepository } from 'repositories';
 
 export type SaleWithUsers = Sale & { users: UsersOnSales[] };
@@ -36,6 +36,14 @@ export class SalesService {
     return this.salesRepository.findUnique({
       where: {
         id: saleId
+      }
+    });
+  }
+
+  public getAllSalesByStatus(status: SaleStatusTypes): Promise<Sale[]> {
+    return this.salesRepository.findMany({
+      where: {
+        status
       }
     });
   }

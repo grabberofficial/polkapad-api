@@ -14,18 +14,18 @@ export class RegisterDto {
   @MinLength(8)
   password: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   name: string;
 
   @ApiPropertyOptional()
-  @IsString()
   @IsOptional()
+  @IsString()
   promocode: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty()
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 

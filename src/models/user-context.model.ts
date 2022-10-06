@@ -1,6 +1,6 @@
+import { KycStatusTypes, UserRoleTypes } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { IUserContext } from 'abstractions/interfaces';
-import { WalletModel } from 'models/wallet.model';
 
 export class UserContextModel implements IUserContext {
   @ApiProperty()
@@ -9,9 +9,9 @@ export class UserContextModel implements IUserContext {
   @ApiProperty()
   name: string;
 
-  @ApiProperty()
-  kycStatus: string;
+  @ApiProperty({ enum: KycStatusTypes })
+  kycStatus: KycStatusTypes;
 
-  @ApiProperty({ isArray: true })
-  wallets: WalletModel[];
+  @ApiProperty({ enum: UserRoleTypes })
+  role: UserRoleTypes;
 }

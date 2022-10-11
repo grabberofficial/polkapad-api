@@ -34,6 +34,15 @@ export class WalletsService {
     });
   }
 
+  public getWalletByName(userId: string, name: string): Promise<Wallet | null> {
+    return this.walletsRepository.findFirst({
+      where: {
+        userId,
+        name
+      }
+    });
+  }
+
   public getWalletById(id: string): Promise<Wallet | null> {
     return this.walletsRepository.findUnique({
       where: {

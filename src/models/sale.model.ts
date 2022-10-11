@@ -1,4 +1,4 @@
-import { Sale } from '@prisma/client';
+import { Sale, SaleStatusTypes } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SaleModel implements Sale {
@@ -7,6 +7,9 @@ export class SaleModel implements Sale {
 
   @ApiProperty()
   title: string;
+
+  @ApiProperty({ enum: SaleStatusTypes })
+  status: SaleStatusTypes;
 
   @ApiPropertyOptional()
   description: string;

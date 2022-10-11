@@ -9,6 +9,9 @@ export class UserContextModel implements IUserContext {
   @ApiProperty()
   name: string;
 
+  @ApiProperty()
+  email: string;
+
   @ApiProperty({ enum: KycStatusTypes })
   kycStatus: KycStatusTypes;
 

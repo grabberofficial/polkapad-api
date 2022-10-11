@@ -37,9 +37,16 @@ export class WalletsController {
     @UserContext() userContext: IUserContext,
     @Body() { name, value }: CreateWalletDto
   ) {
-    const isExist = await this.walletsService.getWalletByValue(value);
+    const isValueExist = await this.walletsService.getWalletByValue(value);
 
-    if (isExist) throw new WalletAlreadyUsedException();
+    if (isValueExist) throw new WalletAlreadyUsedException();
+
+    const isNameExist = await this.walletsService.getWalletByName(
+      userContext.id,
+      name
+    );
+
+    if (isNameExist) throw new WalletAlreadyUsedException();
 
     return this.walletsService.createWallet({
       name,

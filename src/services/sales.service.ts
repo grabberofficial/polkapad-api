@@ -36,7 +36,10 @@ export class SalesService {
     return this.salesRepository.findUnique({
       where: {
         id: saleId
-      }
+      },
+      include: {
+        info: true
+      },
     });
   }
 
@@ -66,7 +69,10 @@ export class SalesService {
     const data = await this.salesRepository.findMany({
       skip: offset,
       take: count,
-      ...rules
+      ...rules,
+      include: {
+        info: true
+      },
     });
 
     return [data, total];
